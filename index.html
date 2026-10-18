@@ -28,7 +28,7 @@ main{max-width:760px;margin:0 auto;padding:14px}
 .play .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.play .row+.row{margin-top:8px}
 .pbtn{border:0;border-radius:8px;padding:9px 14px;font-size:.95rem;cursor:pointer;background:#4f46e5;color:#fff}.pbtn.sub{background:#e0e7ff;color:#3730a3}.pbtn:disabled{opacity:.4}
 .line.playing{outline:3px solid #22c55e;background:#f0fdf4}
-.navtabs{display:flex;gap:8px;margin-bottom:12px}.navtabs button{flex:1;border:1px solid #4f46e5;background:#fff;color:#4f46e5;padding:10px;border-radius:10px;font-size:.95rem}.navtabs button.on{background:#4f46e5;color:#fff}
+.navtabs{display:flex;gap:8px;margin-bottom:12px}.navtabs button{flex:1;border:1px solid #4f46e5;background:#fff;color:#4f46e5;padding:10px 4px;border-radius:10px;font-size:.92rem;white-space:nowrap}.navtabs button.on{background:#4f46e5;color:#fff}
 textarea{width:100%;min-height:90px;border:1px solid #c7d2fe;border-radius:10px;padding:10px;font-size:1rem;font-family:inherit;resize:vertical}
 .trOut{background:#fff;border-radius:12px;padding:12px;margin:10px 0;box-shadow:0 1px 3px rgba(0,0,0,.06);border-left:5px solid #22c55e}
 .hist{background:#fff;border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:.9rem;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.05)}.hist small{color:#666;display:block}
@@ -38,12 +38,36 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:rgba(79,70,229,.2)}
 #toast.show{opacity:1}
 #inapp{background:#fef3c7;border:1px solid #f59e0b;padding:12px;border-radius:12px;margin-bottom:12px;font-size:.92rem;line-height:1.45}
 #inapp .r{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}#inapp button{border:0;border-radius:8px;padding:9px 12px;font-size:.92rem;background:#f59e0b;color:#fff;cursor:pointer}#inapp button.sub{background:#fff;color:#92400e;border:1px solid #f59e0b}
+.aiSet{background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);font-size:.9rem}
+.aiSet summary{cursor:pointer;font-weight:700;color:#4f46e5}.aiSet ol{padding-left:20px;margin:6px 0;line-height:1.5}
+.aiSet input[type=password],.aiSet input[type=text],#aiCustom{width:100%;border:1px solid #c7d2fe;border-radius:8px;padding:9px;font-size:.95rem;font-family:inherit}
+.krow{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.krow>input{flex:1;min-width:160px}.opts{display:flex;flex-direction:column;gap:6px;margin-top:8px}.opts label{display:flex;align-items:center;gap:6px}
+.sbtn{border:0;border-radius:8px;padding:9px 12px;font-size:.9rem;cursor:pointer;background:#4f46e5;color:#fff}.sbtn.sub{background:#e0e7ff;color:#3730a3}.sbtn.del{background:#fee2e2;color:#991b1b}.sbtn:disabled{opacity:.45}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.chips button{border:1px solid #c7d2fe;background:#fff;color:#3730a3;border-radius:18px;padding:6px 11px;font-size:.88rem;cursor:pointer}.chips button.on{background:#4f46e5;color:#fff;border-color:#4f46e5}
+#aiChat{display:flex;flex-direction:column;gap:8px;margin:10px 0;min-height:60px}
+.msg{max-width:88%;padding:10px 12px;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.07);font-size:.98rem;line-height:1.4}
+.msg.ai{background:#fff;align-self:flex-start;border-bottom-left-radius:4px;border-left:4px solid #a5b4fc}
+.msg.me{background:#4f46e5;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.msg.ai.speaking{outline:2px solid #22c55e}
+.msg .mko{color:#666;font-size:.86rem;margin-top:4px}.msg .mtools{margin-top:6px;display:flex;gap:6px}
+.msg .mtools button{border:0;background:#e0e7ff;color:#3730a3;border-radius:6px;padding:4px 8px;font-size:.8rem;cursor:pointer}
+.fb{align-self:flex-end;max-width:88%;background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:8px 10px;font-size:.86rem;line-height:1.45}
+.fb b{color:#92400e}.fb .be{color:#166534;font-weight:600}
+.aiErr{align-self:stretch;background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;border-radius:10px;padding:9px 11px;font-size:.88rem;line-height:1.45}
+.aiErr button{margin-top:6px}
+.typing{align-self:flex-start;color:#6b7280;font-size:.88rem;padding:6px 10px}
+.composer{position:sticky;bottom:0;background:#f4f6fb;padding:8px 0 10px;display:flex;gap:6px;align-items:flex-end}
+.composer textarea{min-height:46px;height:46px;flex:1;font-size:.98rem;padding:10px}
+.mic{border:0;border-radius:50%;width:52px;height:52px;font-size:1.4rem;background:#22c55e;color:#fff;cursor:pointer;flex:none}.mic.rec{background:#ef4444;animation:pulse 1s infinite}
+.send{border:0;border-radius:10px;height:46px;padding:0 14px;background:#4f46e5;color:#fff;font-size:.95rem;cursor:pointer;flex:none}.send:disabled,.mic:disabled{opacity:.45}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(239,68,68,.25)}}
+.aiErr{white-space:pre-line}
 </style></head><body>
 <header><button id="back" class="hidden">← 목록</button><h1 id="title">🗣️ 영어 말하기 연습</h1><button id="reset">기록 초기화</button></header>
 <main>
 <div id="inapp" class="hidden"><b>⚠️ 카카오톡 등 앱 안의 브라우저에서는 음성 기능(듣기·말하기)이 제한돼요.</b><br>Chrome이나 Safari 같은 외부 브라우저로 열어주세요.<div class="r"><button id="openExt">🌐 외부 브라우저로 열기</button><button class="sub" id="copyUrl">🔗 주소 복사</button></div><small id="inappHint" style="display:block;margin-top:6px;color:#92400e"></small></div>
 <div class="warn" id="warn">⚠️ 이 브라우저는 음성 인식을 지원하지 않아요. <b>Chrome, Edge, Safari</b> 최신 버전에서 이용해 주세요. (듣기 기능은 사용 가능)</div>
-<div class="navtabs" id="navtabs"><button data-v="home" class="on">🗂️ 상황별 연습</button><button data-v="tr">🌐 번역하고 듣기</button></div>
+<div class="navtabs" id="navtabs"><button data-v="home" class="on">🗂️ 상황별 연습</button><button data-v="tr">🌐 번역하고 듣기</button><button data-v="ai">🤖 AI 회화</button></div>
 <div id="trView" class="hidden">
 <p style="margin-top:0;font-size:.9rem">한국어나 영어 문장을 입력하세요. 한국어는 영어로 번역한 뒤 읽어줘요.</p>
 <textarea id="trIn" placeholder="예) 이 근처에 맛있는 식당이 있나요?&#10;또는 영어 문장을 바로 입력해도 돼요."></textarea>
@@ -56,6 +80,30 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:rgba(79,70,229,.2)}
 <div id="trStatus" class="pstat"></div>
 <h3 style="font-size:1rem;display:flex;justify-content:space-between;align-items:center">최근 번역 <button id="trClear" style="border:0;background:none;color:#888;font-size:.85rem">지우기</button></h3>
 <div id="trHist"></div>
+</div>
+<div id="aiView" class="hidden">
+<details class="aiSet" id="aiSetBox"><summary>⚙️ Gemini API 키 설정 <span id="aiKeyState" style="font-weight:400;color:#666"></span></summary>
+<ol><li><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio (aistudio.google.com/apikey)</a>에 구글 계정으로 로그인해요.</li>
+<li><b>Create API key</b>(API 키 만들기)를 눌러 키를 만들어요.</li><li>만든 키(AIza…로 시작)를 복사해서 아래에 붙여넣고 <b>저장</b>을 눌러요.</li></ol>
+<small style="color:#666">🔒 키는 이 기기의 브라우저에만 저장되고, Google 서버로만 전송돼요. 무료 사용량을 넘으면 잠시 후 다시 쓸 수 있어요.</small>
+<div class="krow"><input type="password" id="aiKeyIn" placeholder="AIza... 키 붙여넣기" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="sbtn sub" id="aiKeyShow">👁 보기</button></div>
+<div class="krow"><button class="sbtn" id="aiKeySave">💾 저장</button><button class="sbtn del" id="aiKeyDel">🗑 키 삭제</button></div>
+<div id="aiModelInfo" style="margin-top:6px;color:#666;font-size:.82rem"></div>
+</details>
+<div class="aiSet">
+<div><b>상황</b></div><div class="chips" id="aiRoles"></div>
+<input type="text" id="aiCustom" class="hidden" placeholder="예) 부동산 중개인, 택시 기사, 영어 선생님 (한국어로 써도 돼요)">
+<div style="margin-top:8px"><b>난이도</b></div><div class="chips" id="aiLevels"></div>
+<div class="opts">
+<label><input type="checkbox" id="aiAuto" checked> 🔊 AI 답변 자동 읽기</label>
+<label><input type="checkbox" id="aiKo"> 🇰🇷 한국어 번역 보기</label>
+<label><input type="checkbox" id="aiHands"> 🙌 핸즈프리 (AI가 말한 뒤 자동으로 마이크 켜기)</label>
+<label>속도 <input type="range" id="rate3" min="0.5" max="1.3" step="0.1" value="0.9"> <span id="rateV3">0.9</span>x</label></div>
+<div class="krow"><button class="sbtn" id="aiStart">▶ 대화 시작</button><button class="sbtn sub" id="aiReset">🔄 새 대화</button><button class="sbtn sub" id="aiStopV">⏹ 소리 정지</button></div>
+</div>
+<div id="aiChat"></div>
+<div id="aiStatus" class="pstat"></div>
+<div class="composer"><button class="mic" id="aiMic" title="말하기">🎤</button><textarea id="aiIn" placeholder="영어로 입력 (한국어도 OK)"></textarea><button class="send" id="aiSend">보내기</button></div>
 </div>
 <div id="home"><p style="margin-top:0">상황을 골라 연습해 보세요. 각 문장의 최고 점수가 저장됩니다.</p><div class="grid" id="grid"></div></div>
 <div id="detail" class="hidden">
@@ -190,7 +238,7 @@ const save=()=>LS.set(KEY,JSON.stringify(prog));
 let cur=null,mode="practice",roleRun=false,activeRec=null;
 let rate=(parseFloat(LS.get("speakRate"))||0.9);$("#rate").value=rate;$("#rateV").textContent=rate;
 $("#rate2").value=rate;$("#rateV2").textContent=rate;
-const setRate=v=>{rate=parseFloat(v);["#rate","#rate2"].forEach(x=>$(x).value=rate);$("#rateV").textContent=$("#rateV2").textContent=rate;LS.set("speakRate",rate)};
+const setRate=v=>{rate=parseFloat(v);["#rate","#rate2","#rate3"].forEach(x=>$(x).value=rate);$("#rateV").textContent=$("#rateV2").textContent=$("#rateV3").textContent=rate;LS.set("speakRate",rate)};
 $("#rate").oninput=e=>setRate(e.target.value);$("#rate2").oninput=e=>setRate(e.target.value);
 $("#showKo").onchange=()=>document.querySelectorAll(".ko").forEach(k=>k.style.display=$("#showKo").checked?"":"none");
 function enVoices(){if(!SYNTH)return[];let all=[];try{all=SYNTH.getVoices()||[]}catch(e){all=[]}const vs=all.filter(v=>/^en[-_]?/i.test(v.lang));
@@ -276,7 +324,7 @@ $("#reset").onclick=()=>{if(confirm("모든 연습 기록을 삭제할까요?"))
 let pRun=0,pPaused=false,pPos={i:0,loop:1};
 function clearPlaying(){document.querySelectorAll(".line.playing").forEach(x=>x.classList.remove("playing"))}
 function setPBtns(on){$("#pAll").disabled=on;$("#pPause").disabled=!on;$("#pStop").disabled=!on;$("#pPause").textContent=pPaused?"▶ 계속":"⏸ 일시정지"}
-function stopAll(){pRun++;pPaused=false;cancelSpeech();clearPlaying();if($("#pAll")){setPBtns(false);$("#pStatus").textContent=""}trRun++}
+function stopAll(){pRun++;try{aiRun++}catch(e){}pPaused=false;cancelSpeech();clearPlaying();if($("#pAll")){setPBtns(false);$("#pStatus").textContent=""}trRun++}
 async function playAll(fromStart){if(!cur)return;const my=++pRun;if(fromStart)pPos={i:0,loop:1};pPaused=false;setPBtns(true);
 const each=+$("#pEach").value;
 while(my===pRun){const loopOn=$("#pLoop").checked,times=+$("#pTimes").value;
@@ -295,10 +343,12 @@ $("#pStop").onclick=()=>{stopAll();pPos={i:0,loop:1}};
 $("#pPause").onclick=()=>{if(!pPaused){pRun++;pPaused=true;cancelSpeech();setPBtns(true);$("#pStatus").textContent=`⏸ 일시정지 (${pPos.i+1}번째 문장)`}
 else{playAll(false)}};
 // ===== 화면 전환 =====
-document.querySelectorAll("#navtabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#navtabs button").forEach(x=>x.classList.toggle("on",x===b));
-const tr=b.dataset.v==="tr";if(tr){renderHome();}$("#trView").classList.toggle("hidden",!tr);$("#home").classList.toggle("hidden",tr);if(tr)renderHist()});
-const _openSc=openSc;openSc=function(id){$("#navtabs").classList.add("hidden");$("#trView").classList.add("hidden");_openSc(id)};
-const _renderHome=renderHome;renderHome=function(){_renderHome();$("#navtabs").classList.remove("hidden");document.querySelectorAll("#navtabs button").forEach(x=>x.classList.toggle("on",x.dataset.v==="home"));$("#trView").classList.add("hidden")};
+function showView(v){if(activeRec){try{activeRec.abort()}catch(e){}}renderHome();document.querySelectorAll("#navtabs button").forEach(x=>x.classList.toggle("on",x.dataset.v===v));
+$("#trView").classList.toggle("hidden",v!=="tr");$("#aiView").classList.toggle("hidden",v!=="ai");$("#home").classList.toggle("hidden",v!=="home");
+if(v==="tr")renderHist();if(v==="ai")openAiView();try{sessionStorage.setItem("view",v)}catch(e){}}
+document.querySelectorAll("#navtabs button").forEach(b=>b.onclick=()=>showView(b.dataset.v));
+const _openSc=openSc;openSc=function(id){$("#navtabs").classList.add("hidden");$("#trView").classList.add("hidden");$("#aiView").classList.add("hidden");_openSc(id)};
+const _renderHome=renderHome;renderHome=function(){_renderHome();$("#navtabs").classList.remove("hidden");document.querySelectorAll("#navtabs button").forEach(x=>x.classList.toggle("on",x.dataset.v==="home"));$("#trView").classList.add("hidden");$("#aiView").classList.add("hidden");try{sessionStorage.setItem("view","home")}catch(e){}};
 $("#back").onclick=renderHome;
 // ===== 번역하고 듣기 =====
 const HKEY="translateHistory_v1";let hist=[];try{hist=JSON.parse(LS.get(HKEY))||[]}catch(e){hist=[]}
@@ -335,5 +385,172 @@ btn.classList.add("rec");btn.textContent="⏹ 듣는 중...";
 try{const alts=await listen();renderScore($("#resTr"),trCur.en,alts)}catch(e){const b=$("#resTr");b.style.display="block";b.textContent=errMsg(e)}
 btn.classList.remove("rec");btn.textContent="🎤 따라 말하기"};
 $("#trClear").onclick=()=>{if(confirm("최근 번역 기록을 지울까요?")){hist=[];LS.del(HKEY);renderHist()}};
+// ===== 🤖 AI 회화 (Gemini) =====
+const AI_KEY_LS="geminiApiKey_v1",AI_MODEL_LS="geminiModel_v1",AI_PREF_LS="aiPrefs_v1",AI_SESS="aiChat_v1";
+// 2026-10 기준 Gemini 무료 모델. 앞에서부터 시도하고, 없거나(404) 쓸 수 없으면 다음 모델로 넘어감
+const AI_MODELS=["gemini-3.8-flash","gemini-3.5-flash-lite","gemini-3.6-flash","gemini-flash-latest","gemini-3.1-flash-lite","gemini-2.5-flash"];
+const AI_ROLES=[
+{id:"free",t:"💬 자유 대화",r:"a friendly English conversation partner having a casual free talk about everyday topics (hobbies, food, travel, weekend plans)"},
+{id:"cafe",t:"☕ 카페 직원",r:"a barista at a coffee shop taking the learner's order"},
+{id:"airport",t:"✈️ 공항 직원",r:"an airline check-in agent at an international airport helping the learner check in"},
+{id:"hotel",t:"🏨 호텔",r:"a hotel front desk receptionist helping the learner check in and answering questions"},
+{id:"restaurant",t:"🍽️ 식당",r:"a server at a restaurant seating the learner and taking their order"},
+{id:"interview",t:"👔 면접관",r:"a job interviewer at a company conducting a friendly job interview with the learner"},
+{id:"friend",t:"🧑‍🤝‍🧑 친구",r:"the learner's close friend chatting casually, using informal everyday English"},
+{id:"custom",t:"✏️ 직접 입력",r:""}];
+const AI_LEVELS=[
+{id:"beg",t:"초급",d:"BEGINNER (CEFR A1-A2): use very simple, common words and short sentences (under 12 words each), present tense mostly, no idioms or slang. Speak slowly and clearly."},
+{id:"mid",t:"중급",d:"INTERMEDIATE (CEFR B1-B2): everyday natural English, common phrasal verbs are fine, avoid rare idioms."},
+{id:"adv",t:"고급",d:"ADVANCED (CEFR C1): fully natural, native-like English with idioms and nuanced vocabulary where natural."}];
+let aiPrefs={role:"free",level:"beg",custom:"",auto:true,ko:false,hands:false};
+try{Object.assign(aiPrefs,JSON.parse(LS.get(AI_PREF_LS))||{})}catch(e){}
+const saveAiPrefs=()=>LS.set(AI_PREF_LS,JSON.stringify(aiPrefs));
+let aiFailed="",aiMsgs=[],aiCtx=null,aiBusy=false,aiRun=0,aiListening=false;
+function ssGet(k){try{return sessionStorage.getItem(k)}catch(e){return null}}
+function ssSet(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}
+function ssDel(k){try{sessionStorage.removeItem(k)}catch(e){}}
+try{const s=JSON.parse(ssGet(AI_SESS));if(s&&Array.isArray(s.msgs)){aiMsgs=s.msgs;aiCtx=s.ctx||null}}catch(e){}
+const saveAiSess=()=>ssSet(AI_SESS,JSON.stringify({msgs:aiMsgs,ctx:aiCtx}));
+const aiKey=()=>(LS.get(AI_KEY_LS)||"").trim();
+function maskKey(k){return k.length>10?k.slice(0,4)+"••••••"+k.slice(-4):"••••"}
+function aiRefreshKeyUI(){const k=aiKey();$("#aiKeyState").textContent=k?"· 저장됨 ("+maskKey(k)+")":"· 아직 없음";$("#aiKeyIn").value="";$("#aiKeyIn").placeholder=k?"저장된 키: "+maskKey(k)+" (바꾸려면 새 키 입력)":"AIza... 키 붙여넣기";
+$("#aiKeyDel").disabled=!k;const m=LS.get(AI_MODEL_LS);$("#aiModelInfo").textContent=m?"사용 중인 모델: "+m:"모델은 자동으로 골라요 (최신 무료 모델부터 시도)";if(!k)$("#aiSetBox").open=true}
+$("#aiKeyShow").onclick=()=>{const i=$("#aiKeyIn");i.type=i.type==="password"?"text":"password";$("#aiKeyShow").textContent=i.type==="password"?"👁 보기":"🙈 숨기기"};
+$("#aiKeySave").onclick=()=>{const v=$("#aiKeyIn").value.trim().replace(/\s+/g,"");if(!v){toast("키를 붙여넣어 주세요.");return}
+if(!/^[A-Za-z0-9_\-]{20,}$/.test(v)){toast("키 형식이 이상해요. AI Studio에서 복사한 키 전체(AIza…)를 붙여넣어 주세요.",5000);return}
+LS.set(AI_KEY_LS,v);LS.del(AI_MODEL_LS);$("#aiKeyIn").type="password";$("#aiKeyShow").textContent="👁 보기";aiRefreshKeyUI();$("#aiSetBox").open=false;toast("✅ 키를 저장했어요. 이제 대화를 시작해 보세요!")};
+$("#aiKeyDel").onclick=()=>{if(!confirm("저장된 Gemini API 키를 이 기기에서 삭제할까요?"))return;LS.del(AI_KEY_LS);LS.del(AI_MODEL_LS);aiRefreshKeyUI();toast("🗑 키를 삭제했어요.")};
+function aiRenderChips(){
+$("#aiRoles").innerHTML=AI_ROLES.map(r=>`<button data-r="${r.id}" class="${aiPrefs.role===r.id?"on":""}">${r.t}</button>`).join("");
+$("#aiLevels").innerHTML=AI_LEVELS.map(l=>`<button data-l="${l.id}" class="${aiPrefs.level===l.id?"on":""}">${l.t}</button>`).join("");
+$("#aiCustom").classList.toggle("hidden",aiPrefs.role!=="custom");$("#aiCustom").value=aiPrefs.custom||"";
+document.querySelectorAll("#aiRoles button").forEach(b=>b.onclick=()=>{aiPrefs.role=b.dataset.r;saveAiPrefs();aiRenderChips();aiCtxChanged()});
+document.querySelectorAll("#aiLevels button").forEach(b=>b.onclick=()=>{aiPrefs.level=b.dataset.l;saveAiPrefs();aiRenderChips();aiCtxChanged()})}
+$("#aiCustom").oninput=()=>{aiPrefs.custom=$("#aiCustom").value;saveAiPrefs()};
+$("#aiCustom").onchange=aiCtxChanged;
+function aiCurCtx(){const r=AI_ROLES.find(x=>x.id===aiPrefs.role)||AI_ROLES[0],l=AI_LEVELS.find(x=>x.id===aiPrefs.level)||AI_LEVELS[0];
+const custom=(aiPrefs.custom||"").trim();
+return{role:r.id,roleT:r.id==="custom"?("✏️ "+(custom||"직접 입력")):r.t,roleDesc:r.id==="custom"?("this role/situation described by the learner (it may be written in Korean; interpret it): "+(custom||"a friendly conversation partner")):r.r,level:l.id,levelT:l.t,levelDesc:l.d}}
+function aiCtxChanged(){if(aiMsgs.length){$("#aiStatus").textContent="상황·난이도가 바뀌었어요. 🔄 새 대화를 누르면 새 설정으로 시작해요."}}
+$("#aiAuto").checked=aiPrefs.auto;$("#aiKo").checked=aiPrefs.ko;$("#aiHands").checked=aiPrefs.hands;
+$("#aiAuto").onchange=()=>{aiPrefs.auto=$("#aiAuto").checked;saveAiPrefs();if(!aiPrefs.auto){aiRun++;cancelSpeech();aiMarkSpeaking(-1)}};
+$("#aiKo").onchange=()=>{aiPrefs.ko=$("#aiKo").checked;saveAiPrefs();aiRender()};
+$("#aiHands").onchange=()=>{aiPrefs.hands=$("#aiHands").checked;saveAiPrefs();if(aiPrefs.hands&&!SR)toast("🎙️ 핸즈프리는 음성 인식이 필요해요. "+UNSUP_MSG,5000)};
+$("#rate3").value=rate;$("#rateV3").textContent=rate;
+$("#rate3").oninput=e=>{setRate(e.target.value);$("#rate3").value=rate;$("#rateV3").textContent=rate};
+function aiSystem(c){return `You are role-playing with a Korean learner of English who is practicing SPEAKING.
+YOUR ROLE: ${c.roleDesc}. Stay in this role and situation for the whole conversation. Never mention that you are an AI unless asked.
+LEARNER LEVEL: ${c.levelDesc}
+Your reply will be read aloud by text-to-speech, so write plain spoken English: no emojis, no markdown, no lists, no stage directions.
+The learner's messages usually come from speech recognition, so ignore missing punctuation/capitalization and obvious mis-recognitions of single words; do not correct those.
+Always answer with ONE JSON object with exactly these keys:
+- "reply": your next line in the conversation: short, natural English matched to the learner level, 1-3 sentences. Usually end with a question so the conversation keeps going.
+- "reply_ko": a natural Korean translation of "reply".
+- "correction_ko": if the learner's LAST message had grammar mistakes, wrong word choices or unnatural expressions, a brief, kind explanation in Korean (1-2 short sentences). If the learner wrote in Korean, briefly tell them in Korean how to say it in English. If there was nothing to fix, or there is no learner message yet, use "".
+- "better_en": a more natural/correct English version of the learner's LAST message, or "" if it was already natural.`}
+const AI_SCHEMA={type:"OBJECT",properties:{reply:{type:"STRING"},reply_ko:{type:"STRING"},correction_ko:{type:"STRING"},better_en:{type:"STRING"}},required:["reply","reply_ko","correction_ko","better_en"]};
+const AI_START="(The conversation is starting now. Greet me in your role and start the conversation with one short question.)";
+function aiContents(){const out=[{role:"user",parts:[{text:AI_START}]}];
+aiMsgs.forEach(m=>{if(m.who==="me")out.push({role:"user",parts:[{text:m.text}]});else if(m.who==="ai")out.push({role:"model",parts:[{text:JSON.stringify({reply:m.text,reply_ko:m.ko||"",correction_ko:"",better_en:""})}]})});return out}
+class AiError extends Error{constructor(kind,msg,status){super(msg||kind);this.kind=kind;this.status=status}}
+async function aiCallModel(model,key,body){const c=new AbortController();const t=setTimeout(()=>c.abort(),45000);let r;
+try{r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent?key="+encodeURIComponent(key),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),signal:c.signal})}
+catch(e){clearTimeout(t);throw new AiError(e&&e.name==="AbortError"?"timeout":"network",e&&e.message)}
+clearTimeout(t);let j=null;try{j=await r.json()}catch(e){j=null}
+if(!r.ok){const er=(j&&j.error)||{};const msg=er.message||("HTTP "+r.status);const st=er.status||"";const reasons=JSON.stringify(er.details||[]);
+if(/API_KEY_INVALID|API key not valid|API_KEY/i.test(reasons+" "+msg)&&r.status!==429)throw new AiError("key",msg,r.status);
+if(r.status===429||st==="RESOURCE_EXHAUSTED")throw new AiError("quota",msg,429);
+if(r.status===404||st==="NOT_FOUND")throw new AiError("model",msg,404);
+if(r.status===403){if(/billing|not available|access|model/i.test(msg)&&!/API key|SERVICE_DISABLED|has not been used|disabled/i.test(msg+reasons))throw new AiError("model",msg,403);
+if(/SERVICE_DISABLED|has not been used|disabled/i.test(msg+reasons))throw new AiError("disabled",msg,403);throw new AiError("key",msg,403)}
+if(r.status===400&&/location is not supported|User location/i.test(msg))throw new AiError("region",msg,400);
+if(r.status===400&&/thinking/i.test(msg))throw new AiError("thinking",msg,400);
+if(r.status===400&&/not supported|is not found|unsupported/i.test(msg))throw new AiError("model",msg,400);
+if(r.status>=500)throw new AiError("server",msg,r.status);throw new AiError("other",msg,r.status)}
+const cand=j&&j.candidates&&j.candidates[0];
+if(!cand){const br=j&&j.promptFeedback&&j.promptFeedback.blockReason;throw new AiError("empty",br?"blocked: "+br:"no candidates")}
+const txt=((cand.content&&cand.content.parts)||[]).filter(p=>!p.thought).map(p=>p.text||"").join("").trim();
+if(!txt)throw new AiError("empty",cand.finishReason||"empty");return txt}
+function aiParse(txt){let s=txt.replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"").trim();let o=null;
+try{o=JSON.parse(s)}catch(e){const m=s.match(/\{[\s\S]*\}/);if(m){try{o=JSON.parse(m[0])}catch(e2){o=null}}}
+if(!o||typeof o!=="object"||!o.reply)return{reply:s.replace(/[{}"]/g,"").trim()||s,reply_ko:"",correction_ko:"",better_en:""};
+const g=k=>typeof o[k]==="string"?o[k].trim():"";return{reply:g("reply"),reply_ko:g("reply_ko"),correction_ko:g("correction_ko"),better_en:g("better_en")}}
+async function aiAsk(){const key=aiKey();if(!key)throw new AiError("nokey");
+const body={systemInstruction:{parts:[{text:aiSystem(aiCtx||aiCurCtx())}]},contents:aiContents(),
+generationConfig:{responseMimeType:"application/json",responseSchema:AI_SCHEMA,temperature:0.8,maxOutputTokens:1024}};
+const saved=LS.get(AI_MODEL_LS);const order=saved&&AI_MODELS.includes(saved)?[saved,...AI_MODELS.filter(m=>m!==saved)]:AI_MODELS.slice();
+let lastQuota=null,lastErr=null;
+for(const m of order){let b=body;
+for(let attempt=0;attempt<2;attempt++){
+try{const txt=await aiCallModel(m,key,b);if(LS.get(AI_MODEL_LS)!==m){LS.set(AI_MODEL_LS,m);try{aiRefreshKeyUI()}catch(e){}}return aiParse(txt)}
+catch(e){lastErr=e;
+if(e.kind==="thinking"||(e.kind==="other"&&attempt===0&&/responseSchema|response_schema|schema/i.test(e.message))){b=JSON.parse(JSON.stringify(body));delete b.generationConfig.responseSchema;continue}
+if(e.kind==="server"&&attempt===0){await wait(1200);continue}
+break}}
+if(lastErr.kind==="model"||lastErr.kind==="server"||lastErr.kind==="empty"){continue}
+if(lastErr.kind==="quota"){lastQuota=lastErr;continue}// 무료 사용량은 모델마다 따로라서 다른 모델로 시도
+throw lastErr}
+throw lastQuota||lastErr}
+function aiErrText(e){const k=e&&e.kind;
+return k==="nokey"?"🔑 먼저 위의 ⚙️ Gemini API 키 설정에서 키를 저장해 주세요.":
+k==="key"?"🔑 API 키가 올바르지 않아요. AI Studio에서 키를 다시 복사해 ⚙️ 설정에 저장해 주세요.":
+k==="quota"?"⏳ 무료 사용량을 다 썼어요(429). 1분쯤 기다렸다가 다시 시도해 주세요. 하루 한도를 넘었다면 내일 다시 쓸 수 있어요.":
+k==="network"?"🌐 인터넷 연결을 확인해 주세요. Gemini 서버에 연결하지 못했어요.":
+k==="timeout"?"⌛ 응답이 너무 늦어요. 인터넷 연결을 확인하고 다시 시도해 주세요.":
+k==="region"?"🌏 현재 위치에서는 Gemini API를 쓸 수 없다고 해요.":
+k==="disabled"?"🔧 이 키의 프로젝트에서 Gemini API가 꺼져 있어요. AI Studio에서 새 키를 만들어 주세요.":
+k==="model"?"🤖 이 키로 쓸 수 있는 Gemini 모델을 찾지 못했어요. AI Studio에서 새 키를 만들어 다시 시도해 주세요.":
+k==="server"?"🛠️ Gemini 서버가 잠시 바빠요. 조금 뒤 다시 시도해 주세요.":
+k==="empty"?"🤔 AI가 답을 만들지 못했어요. 다르게 말해 보거나 다시 시도해 주세요.":
+"⚠️ AI 응답 오류가 났어요. 다시 시도해 주세요."}
+function aiRender(){const box=$("#aiChat");
+if(!aiMsgs.length){box.innerHTML=`<div style="color:#666;font-size:.9rem;line-height:1.5">상황과 난이도를 고르고 <b>▶ 대화 시작</b>을 누르면 AI가 먼저 말을 걸어요.<br>🎤를 눌러 영어로 대답하거나 아래 칸에 입력하세요. 틀린 표현은 한국어로 고쳐줘요.</div>`;return}
+let h=aiCtx?`<div class="pstat" style="text-align:center">${esc(aiCtx.roleT)} · ${esc(aiCtx.levelT)}</div>`:"";
+aiMsgs.forEach((m,i)=>{if(m.who==="me"){h+=`<div class="msg me">${esc(m.text)}</div>`;if(m.corr||m.better)h+=`<div class="fb">${m.corr?`<div><b>💡 피드백</b> ${esc(m.corr)}</div>`:""}${m.better?`<div>👉 <span class="be">${esc(m.better)}</span> <button class="listen" data-say="${i}" style="border:0;border-radius:6px;padding:2px 7px;font-size:.78rem;cursor:pointer">🔊</button></div>`:""}</div>`}
+else if(m.who==="ai")h+=`<div class="msg ai" id="aim${i}"><div>${esc(m.text)}</div>${aiPrefs.ko&&m.ko?`<div class="mko">${esc(m.ko)}</div>`:""}<div class="mtools"><button data-rp="${i}">🔊 다시 듣기</button></div></div>`;
+else if(m.who==="err")h+=`<div class="aiErr">${esc(m.text)}${i===aiMsgs.length-1?`<div><button class="sbtn sub" id="aiRetry">🔁 다시 시도</button></div>`:""}</div>`});
+if(aiBusy)h+=`<div class="typing">🤖 생각하는 중...</div>`;box.innerHTML=h;
+box.querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>aiSpeak(+b.dataset.rp,false));
+box.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>{aiRun++;stopAll();say(aiMsgs[+b.dataset.say].better)});
+const rt=$("#aiRetry");if(rt)rt.onclick=()=>{aiMsgs.pop();if(aiFailed){const t=aiFailed;aiFailed="";if($("#aiIn").value.trim()===t)$("#aiIn").value="";aiSendText(t)}else aiTurn()}}
+function aiScroll(){try{const c=$("#aiChat").lastElementChild;if(c)c.scrollIntoView({behavior:"smooth",block:"end"})}catch(e){}}
+function aiMarkSpeaking(i){document.querySelectorAll(".msg.ai.speaking").forEach(x=>x.classList.remove("speaking"));const el=document.getElementById("aim"+i);if(el)el.classList.add("speaking")}
+async function aiSpeak(i,auto){const m=aiMsgs[i];if(!m)return;const my=++aiRun;pRun++;trRun++;
+if(activeRec){try{activeRec.abort()}catch(e){}}
+aiMarkSpeaking(i);$("#aiStatus").textContent="🔊 AI가 말하는 중...";await say(m.text,"A");if(my!==aiRun)return;aiMarkSpeaking(-1);$("#aiStatus").textContent="";
+if(auto&&aiPrefs.hands&&SR&&!aiBusy&&!$("#aiView").classList.contains("hidden")){await wait(250);if(my===aiRun)aiMic(true)}}
+function aiSetBusy(b){aiBusy=b;$("#aiSend").disabled=b;$("#aiMic").disabled=b}
+async function aiTurn(){aiSetBusy(true);aiRender();aiScroll();$("#aiStatus").textContent="";
+try{const r=await aiAsk();const last=[...aiMsgs].reverse().find(m=>m.who==="me");
+if(last&&aiMsgs[aiMsgs.length-1]===last){last.corr=r.correction_ko;last.better=r.better_en&&norm(r.better_en).join(" ")!==norm(last.text).join(" ")?r.better_en:""}
+aiMsgs.push({who:"ai",text:r.reply,ko:r.reply_ko});aiSetBusy(false);saveAiSess();aiRender();aiScroll();
+if(aiPrefs.auto)aiSpeak(aiMsgs.length-1,true)}
+catch(e){aiSetBusy(false);aiFailed="";if(aiMsgs.length&&aiMsgs[aiMsgs.length-1].who==="me"){aiFailed=aiMsgs.pop().text;if(!$("#aiIn").value.trim())$("#aiIn").value=aiFailed}saveAiSess();aiMsgs.push({who:"err",text:aiErrText(e)+(e&&e.kind&&e.kind!=="nokey"&&e.message&&e.message!==e.kind?"\n("+String(e.message).slice(0,140)+")":"")});aiRender();aiScroll();
+if(e&&(e.kind==="nokey"||e.kind==="key"))$("#aiSetBox").open=true}}
+async function aiStartConv(){if(!aiKey()){$("#aiSetBox").open=true;toast("🔑 먼저 Gemini API 키를 저장해 주세요.",4000);try{$("#aiKeyIn").focus()}catch(e){}return}
+aiUnlockSpeech();aiRun++;stopAll();if(activeRec){try{activeRec.abort()}catch(e){}}
+aiCtx=aiCurCtx();aiMsgs=[];saveAiSess();$("#aiStatus").textContent="";await aiTurn()}
+function aiSendText(text){text=(text||"").trim();if(!text||aiBusy)return;if(!aiKey()){$("#aiSetBox").open=true;toast("🔑 먼저 Gemini API 키를 저장해 주세요.",4000);return}
+aiUnlockSpeech();aiRun++;cancelSpeech();aiMarkSpeaking(-1);if(!aiCtx)aiCtx=aiCurCtx();
+if(aiMsgs.length&&aiMsgs[aiMsgs.length-1].who==="err")aiMsgs.pop();
+aiMsgs.push({who:"me",text});$("#aiIn").value="";saveAiSess();aiTurn()}
+async function aiMic(fromHands){if(activeRec){try{activeRec.stop()}catch(e){}return}
+if(!SR){toast("🎙️ "+UNSUP_MSG,5000);return}if(aiBusy)return;
+if(!aiKey()){$("#aiSetBox").open=true;toast("🔑 먼저 Gemini API 키를 저장해 주세요.",4000);return}
+if(!fromHands)aiUnlockSpeech();aiRun++;pRun++;trRun++;cancelSpeech();aiMarkSpeaking(-1);
+const btn=$("#aiMic");btn.classList.add("rec");btn.textContent="⏹";$("#aiStatus").textContent=fromHands?"🎙️ 듣는 중... 영어로 말해 보세요 (핸즈프리)":"🎙️ 듣는 중... 영어로 말해 보세요";aiListening=true;
+try{const alts=await listen();btn.classList.remove("rec");btn.textContent="🎤";aiListening=false;$("#aiStatus").textContent="";const t=(alts[0]||"").trim();if(t)aiSendText(t)}
+catch(e){btn.classList.remove("rec");btn.textContent="🎤";aiListening=false;
+$("#aiStatus").textContent=e==="aborted"?"":(errMsg(e)+(fromHands&&e==="no-speech"?" (핸즈프리 대기 중지 — 🎤를 눌러 다시 말하세요)":""))}}
+let aiUnlocked=false;function aiUnlockSpeech(){if(aiUnlocked||!SYNTH)return;aiUnlocked=true;try{if(!isSpeaking()){const u=new SpeechSynthesisUtterance(" ");u.volume=0;u.lang="en-US";SYNTH.speak(u)}}catch(e){}}// iOS: 첫 음성은 터치 중에 시작돼야 이후 자동 읽기가 됨
+$("#aiStart").onclick=aiStartConv;
+$("#aiReset").onclick=()=>{if(aiMsgs.length&&!confirm("지금 대화를 지우고 새로 시작할까요?"))return;aiRun++;cancelSpeech();if(activeRec){try{activeRec.abort()}catch(e){}}aiMsgs=[];aiCtx=null;ssDel(AI_SESS);$("#aiStatus").textContent="";aiRender();if(aiKey())aiStartConv()};
+$("#aiStopV").onclick=()=>{aiRun++;cancelSpeech();aiMarkSpeaking(-1);if(activeRec){try{activeRec.abort()}catch(e){}}$("#aiStatus").textContent=""};
+$("#aiSend").onclick=()=>aiSendText($("#aiIn").value);
+$("#aiIn").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&e.keyCode!==229){e.preventDefault();aiSendText($("#aiIn").value)}};
+$("#aiMic").onclick=()=>aiMic(false);
+function openAiView(){aiRefreshKeyUI();aiRenderChips();aiRender()}
+let _v0=null;try{_v0=sessionStorage.getItem("view")}catch(e){}
 renderHome();
+if(_v0==="ai"||_v0==="tr")showView(_v0);
 </script></body></html>
