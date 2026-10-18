@@ -62,6 +62,11 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:rgba(79,70,229,.2)}
 .send{border:0;border-radius:10px;height:46px;padding:0 14px;background:#4f46e5;color:#fff;font-size:.95rem;cursor:pointer;flex:none}.send:disabled,.mic:disabled{opacity:.45}
 @keyframes pulse{50%{box-shadow:0 0 0 8px rgba(239,68,68,.25)}}
 .aiErr{white-space:pre-line}
+#trEn p{margin:0 0 .7em}#trEn p:last-child{margin-bottom:0}#trEn .sent{cursor:pointer;border-radius:4px;transition:background .15s}#trEn .sent:hover{background:#eef2ff}#trEn .sent.cur{background:#fde68a}#trEn .sent.sel{outline:2px solid #6366f1;outline-offset:1px}
+#trKo{white-space:pre-wrap;margin-top:6px}#trKo.long{max-height:9em;overflow:auto;border-top:1px dashed #ddd;padding-top:6px}
+.trNav{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:.85rem;color:#555;flex-wrap:wrap}.trNav span{flex:1;text-align:center;min-width:140px}.trNav button{border:1px solid #c7d2fe;background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer}.trNav button:disabled{opacity:.4}
+.trBar{display:inline-block;width:90px;height:6px;background:#e5e7eb;border-radius:3px;vertical-align:middle;margin-left:6px;overflow:hidden}.trBar i{display:block;height:100%;background:#22c55e;transition:width .2s}
+.trErr{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:10px;text-align:left;line-height:1.5}.trErr small{color:#7f1d1d}.trErr button{margin-top:6px;border:0;background:#ef4444;color:#fff;border-radius:8px;padding:7px 12px;cursor:pointer}
 </style></head><body>
 <header><button id="back" class="hidden">← 목록</button><h1 id="title">🗣️ 영어 말하기 연습</h1><button id="reset">기록 초기화</button></header>
 <main>
@@ -69,13 +74,14 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:rgba(79,70,229,.2)}
 <div class="warn" id="warn">⚠️ 이 브라우저는 음성 인식을 지원하지 않아요. <b>Chrome, Edge, Safari</b> 최신 버전에서 이용해 주세요. (듣기 기능은 사용 가능)</div>
 <div class="navtabs" id="navtabs"><button data-v="home" class="on">🗂️ 상황별 연습</button><button data-v="tr">🌐 번역하고 듣기</button><button data-v="ai">🤖 AI 회화</button></div>
 <div id="trView" class="hidden">
-<p style="margin-top:0;font-size:.9rem">한국어나 영어 문장을 입력하세요. 한국어는 영어로 번역한 뒤 읽어줘요.</p>
+<p style="margin-top:0;font-size:.9rem">한국어나 영어 문장을 입력하세요. 한국어는 영어로 번역한 뒤 읽어줘요. 긴 글도 OK — 문장별로 나눠서 읽어줘요.</p>
 <textarea id="trIn" placeholder="예) 이 근처에 맛있는 식당이 있나요?&#10;또는 영어 문장을 바로 입력해도 돼요."></textarea>
 <button class="big" id="trGo">🌐 번역하고 듣기</button>
 <div class="controls" style="margin-top:-4px"><label>속도 <input type="range" id="rate2" min="0.5" max="1.3" step="0.1" value="0.9"> <span id="rateV2">0.9</span>x</label>
 <label><input type="checkbox" id="trRep"> 🔁 반복 듣기</label></div>
 <div id="trOutBox" class="trOut hidden"><div class="who" id="trSrc"></div><div class="en" id="trEn" style="font-size:1.15rem"></div><div class="ko" id="trKo"></div>
 <div class="btns"><button class="listen" id="trListen">🔊 듣기</button><button class="listen" id="trStop">⏹ 정지</button><button class="speak" id="trSpeak">🎤 따라 말하기</button></div>
+<div id="trNav" class="trNav hidden"><button id="trPrev">◀ 이전 문장</button><span id="trNavInfo"></span><button id="trNext">다음 문장 ▶</button></div>
 <div class="result" id="resTr"></div></div>
 <div id="trStatus" class="pstat"></div>
 <h3 style="font-size:1rem;display:flex;justify-content:space-between;align-items:center">최근 번역 <button id="trClear" style="border:0;background:none;color:#888;font-size:.85rem">지우기</button></h3>
@@ -353,37 +359,85 @@ $("#back").onclick=renderHome;
 // ===== 번역하고 듣기 =====
 const HKEY="translateHistory_v1";let hist=[];try{hist=JSON.parse(LS.get(HKEY))||[]}catch(e){hist=[]}
 const hasKo=s=>/[\u3131-\u318E\uAC00-\uD7A3]/.test(s);
-let trCur=null,trRun=0;
-async function fetchJ(url,ms){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms||8000);try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw new Error("HTTP "+r.status);return await r.json()}finally{clearTimeout(t)}}
+let trCur=null,trRun=0,trJob=0,trSents=[],trSel=-1,trPending=null;
+const TR_MAX=450;// MyMemory 무료 한도 500자 → 여유 있게 450자씩
+async function fetchJ(url,ms){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms||10000);try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw new Error("HTTP "+r.status);return await r.json()}finally{clearTimeout(t)}}
 async function trMyMemory(q){const j=await fetchJ("https://api.mymemory.translated.net/get?langpair=ko|en&q="+encodeURIComponent(q));
-const t=j&&j.responseData&&j.responseData.translatedText;if(!t||j.responseStatus!==200||/MYMEMORY WARNING|QUERY LENGTH/i.test(t)||hasKo(t))throw new Error("mymemory");return t}
+const t=j&&j.responseData&&j.responseData.translatedText;if(!t||j.responseStatus!==200||/MYMEMORY WARNING|QUERY LENGTH|LIMIT EXCEEDED/i.test(t)||hasKo(t))throw new Error("mymemory");return t}
 async function trGoogle(q){const j=await fetchJ("https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q="+encodeURIComponent(q));
 const t=(j&&j[0]||[]).map(x=>x[0]).join("");if(!t)throw new Error("google");return t}
 async function translate(q){const errs=[];for(const f of [trMyMemory,trGoogle]){try{return await f(q)}catch(e){errs.push(e.message)}}throw new Error(errs.join(", "))}
 function decode(s){const d=document.createElement("textarea");d.innerHTML=s;return d.value}
-async function speakTr(){if(!trCur)return;const my=++trRun;pRun++;
-do{$("#trStatus").textContent="🔊 읽는 중...";await say(trCur.en);if(my!==trRun)return;if($("#trRep").checked)await wait(1200)}while(my===trRun&&$("#trRep").checked);
-if(my===trRun)$("#trStatus").textContent=""}
-function showTr(item){trCur=item;$("#trOutBox").classList.remove("hidden");$("#resTr").style.display="none";
-$("#trSrc").textContent=item.ko?"🇰🇷 → 🇺🇸 번역 결과":"🇺🇸 영어 문장";$("#trEn").textContent=item.en;$("#trKo").textContent=item.ko||""}
-function addHist(item){hist=hist.filter(h=>h.en!==item.en);hist.unshift(item);hist=hist.slice(0,30);LS.set(HKEY,JSON.stringify(hist));renderHist()}
-function renderHist(){$("#trHist").innerHTML=hist.length?hist.map((h,i)=>`<div class="hist" data-i="${i}">${esc(h.en)}${h.ko?`<small>${esc(h.ko)}</small>`:""}</div>`).join(""):`<div style="color:#888;font-size:.9rem">아직 없어요.</div>`;
-document.querySelectorAll(".hist").forEach(d=>d.onclick=()=>{const h=hist[+d.dataset.i];$("#trIn").value=h.ko||h.en;showTr(h);speakTr();window.scrollTo({top:0,behavior:"smooth"})})}
-$("#trGo").onclick=async()=>{const q=$("#trIn").value.trim();if(!q){$("#trStatus").textContent="문장을 입력해 주세요.";return}
-trRun++;cancelSpeech();let item;
-if(hasKo(q)){$("#trStatus").textContent="🌐 번역 중...";$("#trGo").disabled=true;
-try{const en=decode(await translate(q)).trim();item={ko:q,en}}catch(e){$("#trStatus").textContent="번역에 실패했어요. 인터넷 연결을 확인하고 다시 시도해 주세요. ("+e.message+")";$("#trGo").disabled=false;return}
-$("#trGo").disabled=false}else item={ko:"",en:q};
-showTr(item);addHist(item);speakTr()};
+// 문장 나누기 (. ? ! 。 등 + 줄바꿈)
+function splitSent(p){return (p.match(/[^.?!。？！…]+(?:[.?!。？！…]+["'”’)\]]*|$)\s*/g)||[]).map(s=>s.trim()).filter(Boolean)}
+// 너무 긴 문장은 쉼표·공백에서 강제로 자르기
+function hardSplit(s,max){const out=[];while(s.length>max){let cut=-1;for(const re of [/[,，、;:]\s/g,/[,，、;:]/g,/\s/g]){let m,last=-1;re.lastIndex=0;while((m=re.exec(s))&&m.index<max)last=m.index+m[0].length;if(last>max*0.3){cut=last;break}}if(cut<0)cut=max;out.push(s.slice(0,cut).trim());s=s.slice(cut).trim()}if(s)out.push(s);return out}
+// 문단 → 청크 목록 [{p:문단번호, t:텍스트}]
+function makeChunks(text,max){const paras=text.replace(/\r/g,"").split(/\n+/).map(x=>x.trim()).filter(Boolean);const out=[];
+paras.forEach((p,pi)=>{let buf="";splitSent(p).flatMap(s=>s.length>max?hardSplit(s,max):[s]).forEach(s=>{if(buf&&(buf+" "+s).length>max){out.push({p:pi,t:buf});buf=s}else buf=buf?buf+" "+s:s});if(buf)out.push({p:pi,t:buf})});
+return {paras:paras.length,chunks:out}}
+function joinChunks(chunks,res){const ps=[];chunks.forEach((c,i)=>{ps[c.p]=(ps[c.p]?ps[c.p]+" ":"")+res[i]});return ps.filter(x=>x!=null).join("\n\n")}
+// Gemini로 한 번에 번역 (키가 저장돼 있을 때)
+async function trGemini(q){const key=aiKey();const body={systemInstruction:{parts:[{text:"You are a professional Korean-to-English translator. Translate the user's text into natural, fluent English that sounds like a native speaker wrote it. Keep the meaning and tone. Keep the same paragraph breaks (separate paragraphs with a blank line). Translate everything; do not summarize, skip, explain, or add notes. Output ONLY the English translation."}]},
+contents:[{role:"user",parts:[{text:q}]}],generationConfig:{temperature:0.3,maxOutputTokens:8192}};
+const saved=LS.get(AI_MODEL_LS);const order=saved&&AI_MODELS.includes(saved)?[saved,...AI_MODELS.filter(m=>m!==saved)]:AI_MODELS.slice();let lastErr=null;
+for(const m of order){for(let attempt=0;attempt<2;attempt++){try{let t=await aiCallModel(m,key,body);t=t.replace(/^```[a-z]*\s*/i,"").replace(/\s*```$/,"").trim();const koN=(t.match(/[\uAC00-\uD7A3]/g)||[]).length;if(!t||koN>t.length*0.1)throw new AiError("empty","bad output");
+if(LS.get(AI_MODEL_LS)!==m){LS.set(AI_MODEL_LS,m);try{aiRefreshKeyUI()}catch(e){}}return t}
+catch(e){lastErr=e;if(e.kind==="server"&&attempt===0){await wait(1000);continue}break}}
+if(["model","server","empty","quota","thinking","timeout"].includes(lastErr.kind))continue;throw lastErr}throw lastErr}
+function trSetStatus(html){$("#trStatus").innerHTML=html}
+// 무료 번역기로 청크 하나씩 (실패하면 그 청크부터 다시 시도 가능)
+async function trRunChunks(job){const my=job.id;const {chunks,res}=job;
+for(let i=job.next;i<chunks.length;i++){if(my!==trJob)return null;job.next=i;
+trSetStatus(`🌐 번역 중... (${i+1}/${chunks.length})`+(chunks.length>1?` <span class="trBar"><i style="width:${Math.round(i/chunks.length*100)}%"></i></span>`:""));
+let ok=false,err="";for(let a=0;a<2&&!ok;a++){try{res[i]=decode(await translate(chunks[i].t)).trim();ok=true}catch(e){err=e.message;if(a===0)await wait(800)}}
+if(my!==trJob)return null;
+if(!ok){trPending=job;trSetStatus(`<div class="trErr">⚠️ 긴 글의 ${i+1}번째 부분(전체 ${chunks.length}개 중)을 번역하지 못했어요.<br>인터넷 연결을 확인하거나, 무료 번역 사용량이 많으면 잠시 후 다시 시도해 주세요.<br><small>"${esc(chunks[i].t.slice(0,40))}${chunks[i].t.length>40?"…":""}" (${esc(err)})</small><br><button id="trRetry">🔄 ${i+1}번째부터 다시 시도</button></div>`);
+$("#trRetry").onclick=()=>{trJob++;job.id=trJob;$("#trGo").disabled=true;trRunChunks(job).then(trFinish)};$("#trGo").disabled=false;return null}}
+job.next=chunks.length;return joinChunks(chunks,res)}
+function trFinish(en){if(en==null)return;trPending=null;$("#trGo").disabled=false;const item={ko:trLastQ,en,via:trLastVia};trSetStatus("");showTr(item);addHist(item);speakTr(0)}
+let trLastQ="",trLastVia="";
+async function doTranslate(q){trRun++;trPending=null;cancelSpeech();$("#trOutBox").classList.add("hidden");const my=++trJob;$("#trGo").disabled=true;trLastQ=q;
+if(aiKey()){trLastVia="gemini";trSetStatus("🤖 Gemini로 번역 중..."+(q.length>300?" (긴 글은 몇 초 걸려요)":""));
+try{const en=await trGemini(q);if(my!==trJob)return;return trFinish(en)}catch(e){if(my!==trJob)return;toast("🤖 Gemini 번역 실패 → 무료 번역기로 바꿔서 번역할게요. ("+aiErrText(e).replace(/^\S+\s/,"").slice(0,60)+")",5000)}}
+trLastVia="free";const {chunks}=makeChunks(q,TR_MAX);if(!chunks.length){$("#trGo").disabled=false;trSetStatus("문장을 입력해 주세요.");return}
+const job={id:my,chunks,res:[],next:0};trFinish(await trRunChunks(job))}
+// 영어 읽기: 문장 단위로 (크롬은 15초 넘는 긴 발화를 끊어버림)
+function speakUnits(s){return s.length>220?hardSplit(s,200):[s]}
+function trBuildSents(en){const paras=en.replace(/\r/g,"").split(/\n+/).map(x=>x.trim()).filter(Boolean);const out=[];paras.forEach((p,pi)=>splitSent(p).forEach(s=>out.push({p:pi,t:s})));return out}
+function trMark(i){document.querySelectorAll("#trEn .sent.cur").forEach(x=>x.classList.remove("cur"));const el=document.getElementById("ts"+i);if(el){el.classList.add("cur");try{const r=el.getBoundingClientRect();if(r.top<0||r.bottom>innerHeight)el.scrollIntoView({behavior:"smooth",block:"center"})}catch(e){}}}
+function trSelect(i){trSel=i;document.querySelectorAll("#trEn .sent.sel").forEach(x=>x.classList.remove("sel"));const el=document.getElementById("ts"+i);if(el)el.classList.add("sel");trNavUI()}
+function trNavUI(){const multi=trSents.length>1;$("#trNav").classList.toggle("hidden",!multi);if(!multi)return;$("#trNavInfo").textContent=trSel>=0?`따라 말할 문장: ${trSel+1}/${trSents.length}`:`문장을 누르면 그 문장만 듣고 따라 말할 수 있어요 (${trSents.length}문장)`;$("#trPrev").disabled=trSel<=0;$("#trNext").disabled=trSel>=trSents.length-1}
+async function speakTr(from,only){if(!trCur)return;const my=++trRun;pRun++;try{aiRun++}catch(e){}from=from|0;const n=trSents.length;
+do{for(let i=from;i<(only?from+1:n);i++){if(my!==trRun)return;trMark(i);trSetStatus(n>1?`🔊 읽는 중... (${i+1}/${n})`:"🔊 읽는 중...");
+for(const u of speakUnits(trSents[i].t)){await say(u);if(my!==trRun)return}if(i<n-1&&!only)await wait(trSents[i+1]&&trSents[i+1].p!==trSents[i].p?450:150)}
+if(my!==trRun)return;if(!only)from=0;if($("#trRep").checked){trSetStatus("🔁 잠시 후 다시 읽어요...");await wait(1200)}}while(my===trRun&&$("#trRep").checked);
+if(my===trRun){trSetStatus("");trMark(-1)}}
+function showTr(item){trCur=item;trSents=trBuildSents(item.en);trSel=-1;$("#trOutBox").classList.remove("hidden");$("#resTr").style.display="none";
+$("#trSrc").textContent=item.ko?"🇰🇷 → 🇺🇸 번역 결과"+(item.via==="gemini"?" (🤖 Gemini)":""):"🇺🇸 영어 문장";
+let html="",lp=-1;trSents.forEach((s,i)=>{if(s.p!==lp){if(lp>=0)html+="</p>";html+="<p>";lp=s.p}html+=`<span class="sent" id="ts${i}" data-i="${i}">${esc(s.t)}</span> `});if(lp>=0)html+="</p>";
+$("#trEn").innerHTML=html||esc(item.en);$("#trKo").textContent=item.ko||"";$("#trKo").classList.toggle("long",(item.ko||"").length>200);
+document.querySelectorAll("#trEn .sent").forEach(el=>el.onclick=()=>{const i=+el.dataset.i;trSelect(i);speakTr(i,true)});
+if(trSents.length===1)trSel=0;trNavUI()}
+function addHist(item){hist=hist.filter(h=>h.en!==item.en);hist.unshift(item);hist=hist.slice(0,30);try{LS.set(HKEY,JSON.stringify(hist))}catch(e){}renderHist()}
+const clip=(s,n)=>s.length>n?s.slice(0,n).replace(/\s+/g," ")+"…":s.replace(/\s+/g," ");
+function renderHist(){$("#trHist").innerHTML=hist.length?hist.map((h,i)=>`<div class="hist" data-i="${i}">${esc(clip(h.en,140))}${h.ko?`<small>${esc(clip(h.ko,80))}</small>`:""}</div>`).join(""):`<div style="color:#888;font-size:.9rem">아직 없어요.</div>`;
+document.querySelectorAll(".hist").forEach(d=>d.onclick=()=>{const h=hist[+d.dataset.i];trJob++;$("#trGo").disabled=false;trSetStatus("");$("#trIn").value=h.ko||h.en;showTr(h);speakTr(0);window.scrollTo({top:0,behavior:"smooth"})})}
+$("#trGo").onclick=async()=>{const q=$("#trIn").value.trim();if(!q){trSetStatus("문장을 입력해 주세요.");return}
+if(hasKo(q))return doTranslate(q);trJob++;trRun++;cancelSpeech();trSetStatus("");const item={ko:"",en:q};showTr(item);addHist(item);speakTr(0)};
 $("#trIn").onkeydown=e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey))$("#trGo").click()};
-$("#trListen").onclick=speakTr;
-$("#trStop").onclick=()=>{trRun++;cancelSpeech();$("#trStatus").textContent=""};
-$("#trRep").onchange=()=>{if(!$("#trRep").checked)return;if(trCur&&!isSpeaking())speakTr()};
+$("#trListen").onclick=()=>speakTr(0);
+$("#trStop").onclick=()=>{trRun++;cancelSpeech();trSetStatus("");trMark(-1)};
+$("#trRep").onchange=()=>{if(!$("#trRep").checked)return;if(trCur&&!isSpeaking())speakTr(trSel>=0&&trSents.length>1?trSel:0,trSel>=0&&trSents.length>1)};
+$("#trPrev").onclick=()=>{if(trSel>0){trSelect(trSel-1);speakTr(trSel,true)}};
+$("#trNext").onclick=()=>{if(trSel<trSents.length-1){trSelect(trSel+1);speakTr(trSel,true)}};
 $("#trSpeak").onclick=async()=>{if(!trCur)return;if(!SR){toast("🎙️ "+UNSUP_MSG,5000);return}
-const btn=$("#trSpeak");if(activeRec){try{activeRec.stop()}catch(e){}return}trRun++;cancelSpeech();$("#trStatus").textContent="";
+const btn=$("#trSpeak");if(activeRec){try{activeRec.stop()}catch(e){}return}
+if(trSents.length>1&&trSel<0)trSelect(0);const target=trSents.length>1?trSents[trSel].t:trCur.en;
+trRun++;cancelSpeech();trSetStatus(trSents.length>1?`🎤 ${trSel+1}번째 문장을 따라 말해 보세요.`:"");trMark(trSents.length>1?trSel:-1);
 btn.classList.add("rec");btn.textContent="⏹ 듣는 중...";
-try{const alts=await listen();renderScore($("#resTr"),trCur.en,alts)}catch(e){const b=$("#resTr");b.style.display="block";b.textContent=errMsg(e)}
-btn.classList.remove("rec");btn.textContent="🎤 따라 말하기"};
+try{const alts=await listen();renderScore($("#resTr"),target,alts)}catch(e){const b=$("#resTr");b.style.display="block";b.textContent=errMsg(e)}
+btn.classList.remove("rec");btn.textContent="🎤 따라 말하기";trSetStatus("")};
 $("#trClear").onclick=()=>{if(confirm("최근 번역 기록을 지울까요?")){hist=[];LS.del(HKEY);renderHist()}};
 // ===== 🤖 AI 회화 (Gemini) =====
 const AI_KEY_LS="geminiApiKey_v1",AI_MODEL_LS="geminiModel_v1",AI_PREF_LS="aiPrefs_v1",AI_SESS="aiChat_v1";
