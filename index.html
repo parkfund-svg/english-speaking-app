@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>영어 말하기 연습</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:#f4f6fb;color:#222}
+header{background:#4f46e5;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+header h1{font-size:1.15rem;margin:0;flex:1}header button{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:8px;padding:6px 10px;font-size:.9rem}
+main{max-width:760px;margin:0 auto;padding:14px}
+.warn{background:#fff4e5;border:1px solid #f5b971;padding:10px;border-radius:10px;margin-bottom:12px;font-size:.9rem;display:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.card{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.08);cursor:pointer}
+.card .emo{font-size:2rem}.card h3{margin:6px 0 2px;font-size:1rem}.card small{color:#666}
+.bar{height:6px;background:#e5e7eb;border-radius:3px;margin-top:8px;overflow:hidden}.bar i{display:block;height:100%;background:#22c55e}
+.controls{background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:.9rem}
+.tabs button{border:1px solid #4f46e5;background:#fff;color:#4f46e5;padding:6px 12px;border-radius:20px}.tabs button.on{background:#4f46e5;color:#fff}
+.line{background:#fff;border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-left:5px solid #a5b4fc}
+.line.B{border-left-color:#fbbf24}.line.active{outline:2px solid #4f46e5}
+.who{font-size:.75rem;font-weight:700;color:#4f46e5}.line.B .who{color:#b45309}
+.en{font-size:1.05rem;margin:4px 0}.ko{color:#666;font-size:.9rem}
+.btns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.btns button,.big{border:0;border-radius:8px;padding:8px 12px;font-size:.9rem;cursor:pointer}
+.listen{background:#e0e7ff;color:#3730a3}.speak{background:#dcfce7;color:#166534}.speak.rec{background:#ef4444;color:#fff}
+.result{margin-top:8px;font-size:.9rem;background:#f9fafb;border-radius:8px;padding:8px;display:none}
+.score{font-weight:700;font-size:1.1rem}.miss{background:#fecaca;color:#991b1b;border-radius:4px;padding:0 3px}.hit{color:#15803d}
+.big{background:#4f46e5;color:#fff;width:100%;padding:12px;font-size:1rem;margin:6px 0 12px}
+.hidden{display:none}
+</style></head><body>
+<header><button id="back" class="hidden">← 목록</button><h1 id="title">🗣️ 영어 말하기 연습</h1><button id="reset">기록 초기화</button></header>
+<main>
+<div class="warn" id="warn">⚠️ 이 브라우저는 음성 인식을 지원하지 않아요. <b>Chrome, Edge, Safari</b> 최신 버전에서 이용해 주세요. (듣기 기능은 사용 가능)</div>
+<div id="home"><p style="margin-top:0">상황을 골라 연습해 보세요. 각 문장의 최고 점수가 저장됩니다.</p><div class="grid" id="grid"></div></div>
+<div id="detail" class="hidden">
+<div class="controls">
+<div class="tabs"><button data-m="practice" class="on">문장 연습</button> <button data-m="role">역할극</button></div>
+<label>속도 <input type="range" id="rate" min="0.5" max="1.3" step="0.1" value="0.9"> <span id="rateV">0.9</span>x</label>
+<label><input type="checkbox" id="showKo" checked> 한국어 보기</label>
+</div>
+<div id="roleBox" class="hidden">
+<label style="font-size:.9rem">내 역할: <select id="myRole"></select></label>
+<button class="big" id="roleStart">▶ 역할극 시작</button>
+<div id="roleStatus" style="font-size:.9rem;color:#4f46e5;margin-bottom:8px"></div>
+</div>
+<div id="lines"></div>
+</div>
+</main>
+<script>
+const SC=[
+{id:"cafe",emo:"☕",t:"카페 주문",roles:["Barista","You"],l:[
+["A","Hi, what can I get for you today?","안녕하세요, 오늘 뭘 드릴까요?"],
+["B","Can I get a medium iced latte, please?","아이스 라떼 미디엄 사이즈 주시겠어요?"],
+["A","Sure. Would you like it with regular milk or oat milk?","네. 일반 우유로 드릴까요, 귀리 우유로 드릴까요?"],
+["B","Oat milk, please.","귀리 우유로 주세요."],
+["A","Is that for here or to go?","드시고 가세요, 가져가세요?"],
+["B","To go, please.","가져갈게요."],
+["A","That will be five dollars.","5달러입니다."],
+["B","Here you are. Thank you!","여기요. 감사합니다!"]]},
+{id:"airport",emo:"✈️",t:"공항",roles:["Agent","You"],l:[
+["A","Good morning. May I see your passport, please?","안녕하세요. 여권 좀 보여주시겠어요?"],
+["B","Of course. Here it is.","물론이죠. 여기 있습니다."],
+["A","Where are you flying to today?","오늘 어디로 가시나요?"],
+["B","I am flying to New York.","뉴욕으로 갑니다."],
+["A","How many bags are you checking in?","수하물은 몇 개 부치시나요?"],
+["B","Just one bag.","한 개만요."],
+["A","Would you like a window or an aisle seat?","창가석과 통로석 중 어느 쪽을 원하세요?"],
+["B","A window seat, please.","창가석으로 주세요."]]},
+{id:"hotel",emo:"🏨",t:"호텔 체크인",roles:["Receptionist","You"],l:[
+["A","Welcome. How can I help you?","어서 오세요. 무엇을 도와드릴까요?"],
+["B","Hi, I have a reservation under the name Kim.","안녕하세요, 김이라는 이름으로 예약했어요."],
+["A","Let me check. You are staying for three nights, right?","확인해 볼게요. 3박 하시는 거 맞죠?"],
+["B","Yes, that is right.","네, 맞아요."],
+["A","Here is your room key. Your room is on the fifth floor.","객실 키입니다. 방은 5층이에요."],
+["B","What time is breakfast?","아침 식사는 몇 시인가요?"],
+["A","Breakfast is from seven to ten.","아침은 7시부터 10시까지입니다."],
+["B","Great, thank you so much.","좋네요, 정말 감사합니다."]]},
+{id:"direction",emo:"🗺️",t:"길 묻기",roles:["Local","You"],l:[
+["B","Excuse me, could you help me?","실례합니다, 좀 도와주실 수 있나요?"],
+["A","Sure, what do you need?","물론이죠, 뭐가 필요하세요?"],
+["B","How do I get to the subway station?","지하철역에 어떻게 가나요?"],
+["A","Go straight two blocks and turn left.","두 블록 직진해서 왼쪽으로 도세요."],
+["B","Is it far from here?","여기서 먼가요?"],
+["A","No, it is about a five minute walk.","아니요, 걸어서 5분 정도예요."],
+["B","Thank you for your help.","도와주셔서 감사합니다."]]},
+{id:"intro",emo:"🙋",t:"자기소개",roles:["Friend","You"],l:[
+["A","Hi, I don't think we've met. I'm Alex.","안녕하세요, 처음 뵙는 것 같네요. 저는 알렉스예요."],
+["B","Nice to meet you. My name is Minji.","만나서 반가워요. 제 이름은 민지예요."],
+["A","Where are you from?","어디 출신이에요?"],
+["B","I am from Seoul, Korea.","한국 서울에서 왔어요."],
+["A","What do you do?","무슨 일 하세요?"],
+["B","I work as a designer.","디자이너로 일해요."],
+["A","What do you like to do in your free time?","여가 시간에 뭐 하는 걸 좋아해요?"],
+["B","I like watching movies and traveling.","영화 보기와 여행을 좋아해요."]]},
+{id:"restaurant",emo:"🍽️",t:"식당",roles:["Server","You"],l:[
+["A","Good evening. Do you have a reservation?","안녕하세요. 예약하셨나요?"],
+["B","No, we don't. A table for two, please.","아니요. 두 명 자리 부탁해요."],
+["A","Right this way. Here are your menus.","이쪽으로 오세요. 메뉴판입니다."],
+["B","What do you recommend?","추천해 주실 만한 게 있나요?"],
+["A","Our steak is very popular.","저희 스테이크가 아주 인기 있어요."],
+["B","I will have the steak, medium rare.","스테이크로 할게요, 미디엄 레어로요."],
+["A","Anything to drink?","음료는요?"],
+["B","Just water, please.","물만 주세요."]]},
+{id:"shopping",emo:"🛍️",t:"쇼핑",roles:["Clerk","You"],l:[
+["A","Hi, are you looking for anything in particular?","안녕하세요, 특별히 찾으시는 게 있나요?"],
+["B","I am looking for a jacket.","재킷을 찾고 있어요."],
+["A","What size do you wear?","어떤 사이즈 입으세요?"],
+["B","Medium. Can I try this on?","미디엄이요. 이거 입어봐도 되나요?"],
+["A","Of course. The fitting room is over there.","물론이죠. 탈의실은 저쪽이에요."],
+["B","It fits well. How much is it?","잘 맞네요. 얼마예요?"],
+["A","It is sixty dollars, but it is on sale today.","60달러인데 오늘 세일 중이에요."],
+["B","Great, I will take it.","좋아요, 이걸로 할게요."]]},
+{id:"hospital",emo:"🏥",t:"병원",roles:["Doctor","You"],l:[
+["A","Hello. What seems to be the problem?","안녕하세요. 어디가 불편하세요?"],
+["B","I have a headache and a sore throat.","두통이 있고 목이 아파요."],
+["A","How long have you had these symptoms?","증상이 얼마나 되셨나요?"],
+["B","Since yesterday morning.","어제 아침부터요."],
+["A","Do you have a fever?","열이 있나요?"],
+["B","Yes, I think I have a slight fever.","네, 약간 열이 있는 것 같아요."],
+["A","I will give you some medicine. Get plenty of rest.","약을 처방해 드릴게요. 푹 쉬세요."],
+["B","Thank you, doctor.","감사합니다, 선생님."]]}
+];
+const $=s=>document.querySelector(s);
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR)$("#warn").style.display="block";
+const KEY="speakingProgress_v1";
+let prog={};try{prog=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){prog={}}
+const save=()=>localStorage.setItem(KEY,JSON.stringify(prog));
+let cur=null,mode="practice",roleRun=false,activeRec=null;
+let rate=parseFloat(localStorage.getItem("speakRate")||"0.9");$("#rate").value=rate;$("#rateV").textContent=rate;
+$("#rate").oninput=e=>{rate=parseFloat(e.target.value);$("#rateV").textContent=rate;localStorage.setItem("speakRate",rate)};
+$("#showKo").onchange=()=>document.querySelectorAll(".ko").forEach(k=>k.style.display=$("#showKo").checked?"":"none");
+function voice(){const vs=speechSynthesis.getVoices();return vs.find(v=>v.lang==="en-US"&&/Google|Samantha|Natural/i.test(v.name))||vs.find(v=>v.lang==="en-US")||vs.find(v=>/^en/.test(v.lang))}
+if(window.speechSynthesis)speechSynthesis.onvoiceschanged=()=>{};
+function say(text){return new Promise(res=>{if(!window.speechSynthesis){alert("이 브라우저는 음성 합성을 지원하지 않아요.");return res()}
+speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=rate;const v=voice();if(v)u.voice=v;u.onend=u.onerror=()=>res();speechSynthesis.speak(u)})}
+function norm(s){return s.toLowerCase().replace(/[’']/g,"'").replace(/[^a-z0-9' ]/g," ").split(/\s+/).filter(Boolean)}
+function score(target,said){const t=norm(target),s=norm(said);
+// LCS word alignment
+const m=t.length,n=s.length,d=Array.from({length:m+1},()=>Array(n+1).fill(0));
+for(let i=m-1;i>=0;i--)for(let j=n-1;j>=0;j--)d[i][j]=t[i]===s[j]?d[i+1][j+1]+1:Math.max(d[i+1][j],d[i][j+1]);
+const hit=Array(m).fill(false);let i=0,j=0;while(i<m&&j<n){if(t[i]===s[j]){hit[i]=true;i++;j++}else if(d[i+1][j]>=d[i][j+1])i++;else j++}
+const words=target.split(/\s+/);let k=0;const html=words.map(w=>{const nw=norm(w);if(!nw.length)return w;let ok=true;nw.forEach(()=>{if(!hit[k])ok=false;k++});return `<span class="${ok?"hit":"miss"}">${w}</span>`}).join(" ");
+const pct=m?Math.round(d[0][0]/Math.max(m,n)*100):0;return{pct,html}}
+function listen(){return new Promise((res,rej)=>{if(!SR){rej("unsupported");return}
+const r=new SR();activeRec=r;r.lang="en-US";r.interimResults=false;r.maxAlternatives=3;let got=false;
+r.onresult=e=>{got=true;const alts=[...e.results[0]].map(a=>a.transcript);res(alts)};
+r.onerror=e=>{rej(e.error)};r.onend=()=>{activeRec=null;if(!got)rej("no-speech")};r.start()})}
+async function practiceSpeak(idx,btn){if(!SR){alert("음성 인식이 지원되지 않아요. Chrome, Edge, Safari를 이용해 주세요.");return}
+if(activeRec){activeRec.stop();return}
+const line=cur.l[idx];btn.classList.add("rec");btn.textContent="⏹ 듣는 중...";
+try{const alts=await listen();showResult(idx,alts)}catch(e){showErr(idx,e)}
+btn.classList.remove("rec");btn.textContent="🎤 말하기"}
+function showResult(idx,alts){const line=cur.l[idx];let best=null,bt="";alts.forEach(a=>{const r=score(line[1],a);if(!best||r.pct>best.pct){best=r;bt=a}});
+const box=document.getElementById("res"+idx);box.style.display="block";
+const msg=best.pct>=90?"훌륭해요! 🎉":best.pct>=70?"좋아요! 👍":best.pct>=40?"조금만 더! 💪":"다시 해볼까요? 🔁";
+box.innerHTML=`<div class="score">${best.pct}% · ${msg}</div><div>내가 말한 문장: <i>${bt.replace(/</g,"&lt;")}</i></div><div>목표 문장: ${best.html}</div><small>빨간색 단어 = 놓친 단어</small>`;
+const p=prog[cur.id]||(prog[cur.id]={});if(!(p[idx]>=best.pct))p[idx]=best.pct;save();return best.pct}
+function showErr(idx,e){const box=document.getElementById("res"+idx);box.style.display="block";
+box.innerHTML=e==="not-allowed"?"🎙️ 마이크 권한을 허용해 주세요.":e==="no-speech"?"음성이 들리지 않았어요. 다시 시도해 주세요.":"인식 오류: "+e}
+function renderHome(){roleRun=false;speechSynthesis&&speechSynthesis.cancel();cur=null;$("#home").classList.remove("hidden");$("#detail").classList.add("hidden");$("#back").classList.add("hidden");$("#title").textContent="🗣️ 영어 말하기 연습";
+$("#grid").innerHTML=SC.map(s=>{const p=prog[s.id]||{};const myIdx=s.l.map((l,i)=>i);const done=myIdx.filter(i=>p[i]>=70).length;const pc=Math.round(done/s.l.length*100);
+return `<div class="card" data-id="${s.id}"><div class="emo">${s.emo}</div><h3>${s.t}</h3><small>${s.l.length}문장 · 통과 ${done}개</small><div class="bar"><i style="width:${pc}%"></i></div></div>`}).join("");
+document.querySelectorAll(".card").forEach(c=>c.onclick=()=>openSc(c.dataset.id))}
+function openSc(id){cur=SC.find(s=>s.id===id);$("#home").classList.add("hidden");$("#detail").classList.remove("hidden");$("#back").classList.remove("hidden");$("#title").textContent=cur.emo+" "+cur.t;
+$("#myRole").innerHTML=`<option value="B">${cur.roles[1]} (B)</option><option value="A">${cur.roles[0]} (A)</option>`;renderLines();window.scrollTo(0,0)}
+function renderLines(){const p=prog[cur.id]||{};
+$("#lines").innerHTML=cur.l.map((l,i)=>`<div class="line ${l[0]}" id="line${i}"><div class="who">${l[0]==="A"?cur.roles[0]:cur.roles[1]}${p[i]!=null?` · 최고 ${p[i]}%`:""}</div>
+<div class="en">${l[1]}</div><div class="ko" ${$("#showKo").checked?"":"style='display:none'"}>${l[2]}</div>
+<div class="btns ${mode==="role"?"hidden":""}"><button class="listen" data-i="${i}">🔊 듣기</button><button class="speak" data-i="${i}">🎤 말하기</button></div>
+<div class="result" id="res${i}"></div></div>`).join("");
+document.querySelectorAll(".listen").forEach(b=>b.onclick=()=>say(cur.l[b.dataset.i][1]));
+document.querySelectorAll(".speak").forEach(b=>b.onclick=()=>practiceSpeak(+b.dataset.i,b))}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("on"));b.classList.add("on");mode=b.dataset.m;roleRun=false;
+$("#roleBox").classList.toggle("hidden",mode!=="role");$("#roleStart").textContent="▶ 역할극 시작";$("#roleStatus").textContent="";renderLines()});
+$("#roleStart").onclick=async()=>{if(roleRun){roleRun=false;speechSynthesis.cancel();if(activeRec)activeRec.abort();return}
+if(!SR){alert("음성 인식이 지원되지 않아 역할극을 할 수 없어요. Chrome, Edge, Safari를 이용해 주세요.");return}
+roleRun=true;$("#roleStart").textContent="⏹ 역할극 중지";const me=$("#myRole").value;let total=0,cnt=0;renderLines();
+for(let i=0;i<cur.l.length&&roleRun;i++){const l=cur.l[i];document.querySelectorAll(".line").forEach(x=>x.classList.remove("active"));const el=document.getElementById("line"+i);el.classList.add("active");el.scrollIntoView({behavior:"smooth",block:"center"});
+if(l[0]!==me){$("#roleStatus").textContent="🔊 상대방이 말하는 중...";await say(l[1])}
+else{let tries=0,ok=false;while(roleRun&&tries<2&&!ok){$("#roleStatus").textContent="🎤 당신 차례예요! 문장을 말해 주세요.";
+try{const alts=await listen();const pc=showResult(i,alts);ok=true;total+=pc;cnt++}catch(e){showErr(i,e);tries++;if(e==="not-allowed")roleRun=false}}}
+await new Promise(r=>setTimeout(r,500))}
+document.querySelectorAll(".line").forEach(x=>x.classList.remove("active"));
+$("#roleStatus").textContent=roleRun&&cnt?`✅ 역할극 완료! 평균 점수 ${Math.round(total/cnt)}%`:"역할극이 중지되었어요.";roleRun=false;$("#roleStart").textContent="▶ 역할극 다시 시작"};
+$("#back").onclick=renderHome;
+$("#reset").onclick=()=>{if(confirm("모든 연습 기록을 삭제할까요?")){prog={};save();cur?renderLines():renderHome()}};
+renderHome();
+</script></body></html>
