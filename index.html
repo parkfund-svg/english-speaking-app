@@ -23,17 +23,48 @@ main{max-width:760px;margin:0 auto;padding:14px}
 .result{margin-top:8px;font-size:.9rem;background:#f9fafb;border-radius:8px;padding:8px;display:none}
 .score{font-weight:700;font-size:1.1rem}.miss{background:#fecaca;color:#991b1b;border-radius:4px;padding:0 3px}.hit{color:#15803d}
 .big{background:#4f46e5;color:#fff;width:100%;padding:12px;font-size:1rem;margin:6px 0 12px}
-.hidden{display:none}
+.hidden{display:none!important}
+.play{background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:.9rem;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.play .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.play .row+.row{margin-top:8px}
+.pbtn{border:0;border-radius:8px;padding:9px 14px;font-size:.95rem;cursor:pointer;background:#4f46e5;color:#fff}.pbtn.sub{background:#e0e7ff;color:#3730a3}.pbtn:disabled{opacity:.4}
+.line.playing{outline:3px solid #22c55e;background:#f0fdf4}
+.navtabs{display:flex;gap:8px;margin-bottom:12px}.navtabs button{flex:1;border:1px solid #4f46e5;background:#fff;color:#4f46e5;padding:10px;border-radius:10px;font-size:.95rem}.navtabs button.on{background:#4f46e5;color:#fff}
+textarea{width:100%;min-height:90px;border:1px solid #c7d2fe;border-radius:10px;padding:10px;font-size:1rem;font-family:inherit;resize:vertical}
+.trOut{background:#fff;border-radius:12px;padding:12px;margin:10px 0;box-shadow:0 1px 3px rgba(0,0,0,.06);border-left:5px solid #22c55e}
+.hist{background:#fff;border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:.9rem;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.05)}.hist small{color:#666;display:block}
+.pstat{color:#4f46e5;font-size:.85rem}
 </style></head><body>
 <header><button id="back" class="hidden">← 목록</button><h1 id="title">🗣️ 영어 말하기 연습</h1><button id="reset">기록 초기화</button></header>
 <main>
 <div class="warn" id="warn">⚠️ 이 브라우저는 음성 인식을 지원하지 않아요. <b>Chrome, Edge, Safari</b> 최신 버전에서 이용해 주세요. (듣기 기능은 사용 가능)</div>
+<div class="navtabs" id="navtabs"><button data-v="home" class="on">🗂️ 상황별 연습</button><button data-v="tr">🌐 번역하고 듣기</button></div>
+<div id="trView" class="hidden">
+<p style="margin-top:0;font-size:.9rem">한국어나 영어 문장을 입력하세요. 한국어는 영어로 번역한 뒤 읽어줘요.</p>
+<textarea id="trIn" placeholder="예) 이 근처에 맛있는 식당이 있나요?&#10;또는 영어 문장을 바로 입력해도 돼요."></textarea>
+<button class="big" id="trGo">🌐 번역하고 듣기</button>
+<div class="controls" style="margin-top:-4px"><label>속도 <input type="range" id="rate2" min="0.5" max="1.3" step="0.1" value="0.9"> <span id="rateV2">0.9</span>x</label>
+<label><input type="checkbox" id="trRep"> 🔁 반복 듣기</label></div>
+<div id="trOutBox" class="trOut hidden"><div class="who" id="trSrc"></div><div class="en" id="trEn" style="font-size:1.15rem"></div><div class="ko" id="trKo"></div>
+<div class="btns"><button class="listen" id="trListen">🔊 듣기</button><button class="listen" id="trStop">⏹ 정지</button><button class="speak" id="trSpeak">🎤 따라 말하기</button></div>
+<div class="result" id="resTr"></div></div>
+<div id="trStatus" class="pstat"></div>
+<h3 style="font-size:1rem;display:flex;justify-content:space-between;align-items:center">최근 번역 <button id="trClear" style="border:0;background:none;color:#888;font-size:.85rem">지우기</button></h3>
+<div id="trHist"></div>
+</div>
 <div id="home"><p style="margin-top:0">상황을 골라 연습해 보세요. 각 문장의 최고 점수가 저장됩니다.</p><div class="grid" id="grid"></div></div>
 <div id="detail" class="hidden">
 <div class="controls">
 <div class="tabs"><button data-m="practice" class="on">문장 연습</button> <button data-m="role">역할극</button></div>
 <label>속도 <input type="range" id="rate" min="0.5" max="1.3" step="0.1" value="0.9"> <span id="rateV">0.9</span>x</label>
 <label><input type="checkbox" id="showKo" checked> 한국어 보기</label>
+</div>
+<div class="play" id="playBox">
+<div class="row"><button class="pbtn" id="pAll">▶ 전체 듣기</button><button class="pbtn sub" id="pPause" disabled>⏸ 일시정지</button><button class="pbtn sub" id="pStop" disabled>⏹ 정지</button></div>
+<div class="row"><label><input type="checkbox" id="pLoop"> 🔁 전체 반복</label>
+<label>횟수 <select id="pTimes"><option value="0">무한</option><option value="2">2회</option><option value="3" selected>3회</option><option value="5">5회</option><option value="10">10회</option></select></label>
+<label>문장마다 <select id="pEach"><option value="1">1번</option><option value="2">2번</option><option value="3">3번</option></select></label>
+<label><input type="checkbox" id="pKoGap"> 문장 사이 쉬기</label></div>
+<div class="row pstat" id="pStatus"></div>
 </div>
 <div id="roleBox" class="hidden">
 <label style="font-size:.9rem">내 역할: <select id="myRole"></select></label>
@@ -125,29 +156,50 @@ let prog={};try{prog=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){prog={}}
 const save=()=>localStorage.setItem(KEY,JSON.stringify(prog));
 let cur=null,mode="practice",roleRun=false,activeRec=null;
 let rate=parseFloat(localStorage.getItem("speakRate")||"0.9");$("#rate").value=rate;$("#rateV").textContent=rate;
-$("#rate").oninput=e=>{rate=parseFloat(e.target.value);$("#rateV").textContent=rate;localStorage.setItem("speakRate",rate)};
+$("#rate2").value=rate;$("#rateV2").textContent=rate;
+const setRate=v=>{rate=parseFloat(v);["#rate","#rate2"].forEach(x=>$(x).value=rate);$("#rateV").textContent=$("#rateV2").textContent=rate;localStorage.setItem("speakRate",rate)};
+$("#rate").oninput=e=>setRate(e.target.value);$("#rate2").oninput=e=>setRate(e.target.value);
 $("#showKo").onchange=()=>document.querySelectorAll(".ko").forEach(k=>k.style.display=$("#showKo").checked?"":"none");
-function voice(){const vs=speechSynthesis.getVoices();return vs.find(v=>v.lang==="en-US"&&/Google|Samantha|Natural/i.test(v.name))||vs.find(v=>v.lang==="en-US")||vs.find(v=>/^en/.test(v.lang))}
+function enVoices(){if(!window.speechSynthesis)return[];const vs=speechSynthesis.getVoices().filter(v=>/^en[-_]?/i.test(v.lang));
+const us=vs.filter(v=>/en[-_]US/i.test(v.lang)),rest=vs.filter(v=>!/en[-_]US/i.test(v.lang));
+const rank=v=>/Natural|Google|Samantha|Aria|Jenny|Guy|Daniel|Alex/i.test(v.name)?0:1;return[...us.sort((a,b)=>rank(a)-rank(b)),...rest.sort((a,b)=>rank(a)-rank(b))]}
+function voice(){return enVoices()[0]}
+// A/B 화자 목소리: 가능하면 다른 목소리, 하나뿐이면 음높이로 구분
+function voiceFor(sp){const vs=enVoices();if(!vs.length)return{v:null,pitch:sp==="B"?1.25:1};
+if(sp!=="B")return{v:vs[0],pitch:1};
+const males=/male|Guy|Daniel|Alex|Fred|David|Mark|Aaron|Arthur|Rishi|UK English Male/i,
+alt=vs.find(v=>v!==vs[0]&&(males.test(v.name)!==males.test(vs[0].name)))||vs.find(v=>v!==vs[0]&&v.lang===vs[0].lang)||vs.find(v=>v!==vs[0]);
+return alt?{v:alt,pitch:1}:{v:vs[0],pitch:1.25}}
 if(window.speechSynthesis)speechSynthesis.onvoiceschanged=()=>{};
-function say(text){return new Promise(res=>{if(!window.speechSynthesis){alert("이 브라우저는 음성 합성을 지원하지 않아요.");return res()}
-speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=rate;const v=voice();if(v)u.voice=v;u.onend=u.onerror=()=>res();speechSynthesis.speak(u)})}
+function say(text,sp){return new Promise(res=>{if(!window.speechSynthesis){alert("이 브라우저는 음성 합성을 지원하지 않아요.");return res()}
+speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=rate;
+if(sp){const o=voiceFor(sp);if(o.v)u.voice=o.v;u.pitch=o.pitch}else{const v=voice();if(v)u.voice=v}
+let done=false;const fin=()=>{if(!done){done=true;clearTimeout(t);res()}};u.onend=u.onerror=fin;
+const t=setTimeout(fin,Math.max(4000,text.length*250/rate));// 일부 브라우저에서 onend 누락 대비
+speechSynthesis.speak(u)})}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
 function norm(s){return s.toLowerCase().replace(/[’']/g,"'").replace(/[^a-z0-9' ]/g," ").split(/\s+/).filter(Boolean)}
 function score(target,said){const t=norm(target),s=norm(said);
 // LCS word alignment
 const m=t.length,n=s.length,d=Array.from({length:m+1},()=>Array(n+1).fill(0));
 for(let i=m-1;i>=0;i--)for(let j=n-1;j>=0;j--)d[i][j]=t[i]===s[j]?d[i+1][j+1]+1:Math.max(d[i+1][j],d[i][j+1]);
 const hit=Array(m).fill(false);let i=0,j=0;while(i<m&&j<n){if(t[i]===s[j]){hit[i]=true;i++;j++}else if(d[i+1][j]>=d[i][j+1])i++;else j++}
-const words=target.split(/\s+/);let k=0;const html=words.map(w=>{const nw=norm(w);if(!nw.length)return w;let ok=true;nw.forEach(()=>{if(!hit[k])ok=false;k++});return `<span class="${ok?"hit":"miss"}">${w}</span>`}).join(" ");
+const words=target.split(/\s+/);let k=0;const html=words.map(w=>{const nw=norm(w);if(!nw.length)return esc(w);let ok=true;nw.forEach(()=>{if(!hit[k])ok=false;k++});return `<span class="${ok?"hit":"miss"}">${esc(w)}</span>`}).join(" ");
 const pct=m?Math.round(d[0][0]/Math.max(m,n)*100):0;return{pct,html}}
 function listen(){return new Promise((res,rej)=>{if(!SR){rej("unsupported");return}
 const r=new SR();activeRec=r;r.lang="en-US";r.interimResults=false;r.maxAlternatives=3;let got=false;
 r.onresult=e=>{got=true;const alts=[...e.results[0]].map(a=>a.transcript);res(alts)};
 r.onerror=e=>{rej(e.error)};r.onend=()=>{activeRec=null;if(!got)rej("no-speech")};r.start()})}
-async function practiceSpeak(idx,btn){if(!SR){alert("음성 인식이 지원되지 않아요. Chrome, Edge, Safari를 이용해 주세요.");return}
+async function practiceSpeak(idx,btn){stopAll();if(!SR){alert("음성 인식이 지원되지 않아요. Chrome, Edge, Safari를 이용해 주세요.");return}
 if(activeRec){activeRec.stop();return}
 const line=cur.l[idx];btn.classList.add("rec");btn.textContent="⏹ 듣는 중...";
 try{const alts=await listen();showResult(idx,alts)}catch(e){showErr(idx,e)}
 btn.classList.remove("rec");btn.textContent="🎤 말하기"}
+function renderScore(box,target,alts){let best=null,bt="";alts.forEach(a=>{const r=score(target,a);if(!best||r.pct>best.pct){best=r;bt=a}});box.style.display="block";
+const msg=best.pct>=90?"훌륭해요! 🎉":best.pct>=70?"좋아요! 👍":best.pct>=40?"조금만 더! 💪":"다시 해볼까요? 🔁";
+box.innerHTML=`<div class="score">${best.pct}% · ${msg}</div><div>내가 말한 문장: <i>${esc(bt)}</i></div><div>목표 문장: ${best.html}</div><small>빨간색 단어 = 놓친 단어</small>`;return best.pct}
+function errMsg(e){return e==="not-allowed"?"🎙️ 마이크 권한을 허용해 주세요.":e==="no-speech"?"음성이 들리지 않았어요. 다시 시도해 주세요.":"인식 오류: "+e}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
 function showResult(idx,alts){const line=cur.l[idx];let best=null,bt="";alts.forEach(a=>{const r=score(line[1],a);if(!best||r.pct>best.pct){best=r;bt=a}});
 const box=document.getElementById("res"+idx);box.style.display="block";
 const msg=best.pct>=90?"훌륭해요! 🎉":best.pct>=70?"좋아요! 👍":best.pct>=40?"조금만 더! 💪":"다시 해볼까요? 🔁";
@@ -155,7 +207,7 @@ box.innerHTML=`<div class="score">${best.pct}% · ${msg}</div><div>내가 말한
 const p=prog[cur.id]||(prog[cur.id]={});if(!(p[idx]>=best.pct))p[idx]=best.pct;save();return best.pct}
 function showErr(idx,e){const box=document.getElementById("res"+idx);box.style.display="block";
 box.innerHTML=e==="not-allowed"?"🎙️ 마이크 권한을 허용해 주세요.":e==="no-speech"?"음성이 들리지 않았어요. 다시 시도해 주세요.":"인식 오류: "+e}
-function renderHome(){roleRun=false;speechSynthesis&&speechSynthesis.cancel();cur=null;$("#home").classList.remove("hidden");$("#detail").classList.add("hidden");$("#back").classList.add("hidden");$("#title").textContent="🗣️ 영어 말하기 연습";
+function renderHome(){stopAll();roleRun=false;speechSynthesis&&speechSynthesis.cancel();cur=null;$("#home").classList.remove("hidden");$("#detail").classList.add("hidden");$("#back").classList.add("hidden");$("#title").textContent="🗣️ 영어 말하기 연습";
 $("#grid").innerHTML=SC.map(s=>{const p=prog[s.id]||{};const myIdx=s.l.map((l,i)=>i);const done=myIdx.filter(i=>p[i]>=70).length;const pc=Math.round(done/s.l.length*100);
 return `<div class="card" data-id="${s.id}"><div class="emo">${s.emo}</div><h3>${s.t}</h3><small>${s.l.length}문장 · 통과 ${done}개</small><div class="bar"><i style="width:${pc}%"></i></div></div>`}).join("");
 document.querySelectorAll(".card").forEach(c=>c.onclick=()=>openSc(c.dataset.id))}
@@ -166,15 +218,15 @@ $("#lines").innerHTML=cur.l.map((l,i)=>`<div class="line ${l[0]}" id="line${i}">
 <div class="en">${l[1]}</div><div class="ko" ${$("#showKo").checked?"":"style='display:none'"}>${l[2]}</div>
 <div class="btns ${mode==="role"?"hidden":""}"><button class="listen" data-i="${i}">🔊 듣기</button><button class="speak" data-i="${i}">🎤 말하기</button></div>
 <div class="result" id="res${i}"></div></div>`).join("");
-document.querySelectorAll(".listen").forEach(b=>b.onclick=()=>say(cur.l[b.dataset.i][1]));
-document.querySelectorAll(".speak").forEach(b=>b.onclick=()=>practiceSpeak(+b.dataset.i,b))}
+document.querySelectorAll("#lines .listen").forEach(b=>b.onclick=()=>{stopAll();say(cur.l[b.dataset.i][1],cur.l[b.dataset.i][0])});
+document.querySelectorAll("#lines .speak").forEach(b=>b.onclick=()=>practiceSpeak(+b.dataset.i,b))}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("on"));b.classList.add("on");mode=b.dataset.m;roleRun=false;
-$("#roleBox").classList.toggle("hidden",mode!=="role");$("#roleStart").textContent="▶ 역할극 시작";$("#roleStatus").textContent="";renderLines()});
+$("#roleBox").classList.toggle("hidden",mode!=="role");$("#playBox").classList.toggle("hidden",mode==="role");stopAll();$("#roleStart").textContent="▶ 역할극 시작";$("#roleStatus").textContent="";renderLines()});
 $("#roleStart").onclick=async()=>{if(roleRun){roleRun=false;speechSynthesis.cancel();if(activeRec)activeRec.abort();return}
 if(!SR){alert("음성 인식이 지원되지 않아 역할극을 할 수 없어요. Chrome, Edge, Safari를 이용해 주세요.");return}
-roleRun=true;$("#roleStart").textContent="⏹ 역할극 중지";const me=$("#myRole").value;let total=0,cnt=0;renderLines();
+stopAll();roleRun=true;$("#roleStart").textContent="⏹ 역할극 중지";const me=$("#myRole").value;let total=0,cnt=0;renderLines();
 for(let i=0;i<cur.l.length&&roleRun;i++){const l=cur.l[i];document.querySelectorAll(".line").forEach(x=>x.classList.remove("active"));const el=document.getElementById("line"+i);el.classList.add("active");el.scrollIntoView({behavior:"smooth",block:"center"});
-if(l[0]!==me){$("#roleStatus").textContent="🔊 상대방이 말하는 중...";await say(l[1])}
+if(l[0]!==me){$("#roleStatus").textContent="🔊 상대방이 말하는 중...";await say(l[1],l[0])}
 else{let tries=0,ok=false;while(roleRun&&tries<2&&!ok){$("#roleStatus").textContent="🎤 당신 차례예요! 문장을 말해 주세요.";
 try{const alts=await listen();const pc=showResult(i,alts);ok=true;total+=pc;cnt++}catch(e){showErr(i,e);tries++;if(e==="not-allowed")roleRun=false}}}
 await new Promise(r=>setTimeout(r,500))}
@@ -182,5 +234,68 @@ document.querySelectorAll(".line").forEach(x=>x.classList.remove("active"));
 $("#roleStatus").textContent=roleRun&&cnt?`✅ 역할극 완료! 평균 점수 ${Math.round(total/cnt)}%`:"역할극이 중지되었어요.";roleRun=false;$("#roleStart").textContent="▶ 역할극 다시 시작"};
 $("#back").onclick=renderHome;
 $("#reset").onclick=()=>{if(confirm("모든 연습 기록을 삭제할까요?")){prog={};save();cur?renderLines():renderHome()}};
+// ===== 전체 듣기 =====
+let pRun=0,pPaused=false,pPos={i:0,loop:1};
+function clearPlaying(){document.querySelectorAll(".line.playing").forEach(x=>x.classList.remove("playing"))}
+function setPBtns(on){$("#pAll").disabled=on;$("#pPause").disabled=!on;$("#pStop").disabled=!on;$("#pPause").textContent=pPaused?"▶ 계속":"⏸ 일시정지"}
+function stopAll(){pRun++;pPaused=false;if(window.speechSynthesis)speechSynthesis.cancel();clearPlaying();if($("#pAll")){setPBtns(false);$("#pStatus").textContent=""}trRun++}
+async function playAll(fromStart){if(!cur)return;const my=++pRun;if(fromStart)pPos={i:0,loop:1};pPaused=false;setPBtns(true);
+const each=+$("#pEach").value;
+while(my===pRun){const loopOn=$("#pLoop").checked,times=+$("#pTimes").value;
+for(;pPos.i<cur.l.length;pPos.i++){if(my!==pRun)return;const l=cur.l[pPos.i];clearPlaying();const el=document.getElementById("line"+pPos.i);
+if(el){el.classList.add("playing");el.scrollIntoView({behavior:"smooth",block:"center"})}
+for(let r=0;r<each;r++){if(my!==pRun)return;
+$("#pStatus").textContent=`🔊 ${pPos.i+1}/${cur.l.length}문장`+(loopOn?` · ${pPos.loop}${times?"/"+times:""}회차`:"")+(each>1?` · ${r+1}/${each}번`:"");
+await say(l[1],l[0]);if(my!==pRun)return;await wait($("#pKoGap").checked?1800:350)}}
+if(my!==pRun)return;
+const loopOn2=$("#pLoop").checked,times2=+$("#pTimes").value;
+if(loopOn2&&(times2===0||pPos.loop<times2)){pPos.loop++;pPos.i=0;await wait(1000);continue}
+break}
+if(my!==pRun)return;clearPlaying();setPBtns(false);$("#pStatus").textContent="✅ 전체 듣기 완료";pRun++}
+$("#pAll").onclick=()=>{if(activeRec)activeRec.abort();playAll(true)};
+$("#pStop").onclick=()=>{stopAll();pPos={i:0,loop:1}};
+$("#pPause").onclick=()=>{if(!pPaused){pRun++;pPaused=true;speechSynthesis.cancel();setPBtns(true);$("#pStatus").textContent=`⏸ 일시정지 (${pPos.i+1}번째 문장)`}
+else{playAll(false)}};
+// ===== 화면 전환 =====
+document.querySelectorAll("#navtabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#navtabs button").forEach(x=>x.classList.toggle("on",x===b));
+const tr=b.dataset.v==="tr";if(tr){renderHome();}$("#trView").classList.toggle("hidden",!tr);$("#home").classList.toggle("hidden",tr);if(tr)renderHist()});
+const _openSc=openSc;openSc=function(id){$("#navtabs").classList.add("hidden");$("#trView").classList.add("hidden");_openSc(id)};
+const _renderHome=renderHome;renderHome=function(){_renderHome();$("#navtabs").classList.remove("hidden");document.querySelectorAll("#navtabs button").forEach(x=>x.classList.toggle("on",x.dataset.v==="home"));$("#trView").classList.add("hidden")};
+$("#back").onclick=renderHome;
+// ===== 번역하고 듣기 =====
+const HKEY="translateHistory_v1";let hist=[];try{hist=JSON.parse(localStorage.getItem(HKEY))||[]}catch(e){hist=[]}
+const hasKo=s=>/[\u3131-\u318E\uAC00-\uD7A3]/.test(s);
+let trCur=null,trRun=0;
+async function fetchJ(url,ms){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms||8000);try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw new Error("HTTP "+r.status);return await r.json()}finally{clearTimeout(t)}}
+async function trMyMemory(q){const j=await fetchJ("https://api.mymemory.translated.net/get?langpair=ko|en&q="+encodeURIComponent(q));
+const t=j&&j.responseData&&j.responseData.translatedText;if(!t||j.responseStatus!==200||/MYMEMORY WARNING|QUERY LENGTH/i.test(t)||hasKo(t))throw new Error("mymemory");return t}
+async function trGoogle(q){const j=await fetchJ("https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q="+encodeURIComponent(q));
+const t=(j&&j[0]||[]).map(x=>x[0]).join("");if(!t)throw new Error("google");return t}
+async function translate(q){const errs=[];for(const f of [trMyMemory,trGoogle]){try{return await f(q)}catch(e){errs.push(e.message)}}throw new Error(errs.join(", "))}
+function decode(s){const d=document.createElement("textarea");d.innerHTML=s;return d.value}
+async function speakTr(){if(!trCur)return;const my=++trRun;pRun++;
+do{$("#trStatus").textContent="🔊 읽는 중...";await say(trCur.en);if(my!==trRun)return;if($("#trRep").checked)await wait(1200)}while(my===trRun&&$("#trRep").checked);
+if(my===trRun)$("#trStatus").textContent=""}
+function showTr(item){trCur=item;$("#trOutBox").classList.remove("hidden");$("#resTr").style.display="none";
+$("#trSrc").textContent=item.ko?"🇰🇷 → 🇺🇸 번역 결과":"🇺🇸 영어 문장";$("#trEn").textContent=item.en;$("#trKo").textContent=item.ko||""}
+function addHist(item){hist=hist.filter(h=>h.en!==item.en);hist.unshift(item);hist=hist.slice(0,30);localStorage.setItem(HKEY,JSON.stringify(hist));renderHist()}
+function renderHist(){$("#trHist").innerHTML=hist.length?hist.map((h,i)=>`<div class="hist" data-i="${i}">${esc(h.en)}${h.ko?`<small>${esc(h.ko)}</small>`:""}</div>`).join(""):`<div style="color:#888;font-size:.9rem">아직 없어요.</div>`;
+document.querySelectorAll(".hist").forEach(d=>d.onclick=()=>{const h=hist[+d.dataset.i];$("#trIn").value=h.ko||h.en;showTr(h);speakTr();window.scrollTo({top:0,behavior:"smooth"})})}
+$("#trGo").onclick=async()=>{const q=$("#trIn").value.trim();if(!q){$("#trStatus").textContent="문장을 입력해 주세요.";return}
+trRun++;speechSynthesis&&speechSynthesis.cancel();let item;
+if(hasKo(q)){$("#trStatus").textContent="🌐 번역 중...";$("#trGo").disabled=true;
+try{const en=decode(await translate(q)).trim();item={ko:q,en}}catch(e){$("#trStatus").textContent="번역에 실패했어요. 인터넷 연결을 확인하고 다시 시도해 주세요. ("+e.message+")";$("#trGo").disabled=false;return}
+$("#trGo").disabled=false}else item={ko:"",en:q};
+showTr(item);addHist(item);speakTr()};
+$("#trIn").onkeydown=e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey))$("#trGo").click()};
+$("#trListen").onclick=speakTr;
+$("#trStop").onclick=()=>{trRun++;speechSynthesis.cancel();$("#trStatus").textContent=""};
+$("#trRep").onchange=()=>{if(!$("#trRep").checked)return;if(trCur&&!speechSynthesis.speaking)speakTr()};
+$("#trSpeak").onclick=async()=>{if(!trCur)return;if(!SR){alert("음성 인식이 지원되지 않아요. Chrome, Edge, Safari를 이용해 주세요.");return}
+const btn=$("#trSpeak");if(activeRec){activeRec.stop();return}trRun++;speechSynthesis.cancel();$("#trStatus").textContent="";
+btn.classList.add("rec");btn.textContent="⏹ 듣는 중...";
+try{const alts=await listen();renderScore($("#resTr"),trCur.en,alts)}catch(e){const b=$("#resTr");b.style.display="block";b.textContent=errMsg(e)}
+btn.classList.remove("rec");btn.textContent="🎤 따라 말하기"};
+$("#trClear").onclick=()=>{if(confirm("최근 번역 기록을 지울까요?")){hist=[];localStorage.removeItem(HKEY);renderHist()}};
 renderHome();
 </script></body></html>
