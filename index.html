@@ -84,9 +84,9 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:rgba(79,70,229,.2)}
 <div id="aiView" class="hidden">
 <details class="aiSet" id="aiSetBox"><summary>⚙️ Gemini API 키 설정 <span id="aiKeyState" style="font-weight:400;color:#666"></span></summary>
 <ol><li><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio (aistudio.google.com/apikey)</a>에 구글 계정으로 로그인해요.</li>
-<li><b>Create API key</b>(API 키 만들기)를 눌러 키를 만들어요.</li><li>만든 키(AIza…로 시작)를 복사해서 아래에 붙여넣고 <b>저장</b>을 눌러요.</li></ol>
+<li><b>Create API key</b>(API 키 만들기)를 눌러 키를 만들어요.</li><li>만든 키(AIza… 또는 AQ.…로 시작)를 복사해서 아래에 붙여넣고 <b>저장</b>을 눌러요.</li></ol>
 <small style="color:#666">🔒 키는 이 기기의 브라우저에만 저장되고, Google 서버로만 전송돼요. 무료 사용량을 넘으면 잠시 후 다시 쓸 수 있어요.</small>
-<div class="krow"><input type="password" id="aiKeyIn" placeholder="AIza... 키 붙여넣기" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="sbtn sub" id="aiKeyShow">👁 보기</button></div>
+<div class="krow"><input type="password" id="aiKeyIn" placeholder="API 키 붙여넣기 (AIza… / AQ.…)" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="sbtn sub" id="aiKeyShow">👁 보기</button></div>
 <div class="krow"><button class="sbtn" id="aiKeySave">💾 저장</button><button class="sbtn del" id="aiKeyDel">🗑 키 삭제</button></div>
 <div id="aiModelInfo" style="margin-top:6px;color:#666;font-size:.82rem"></div>
 </details>
@@ -412,12 +412,12 @@ function ssDel(k){try{sessionStorage.removeItem(k)}catch(e){}}
 try{const s=JSON.parse(ssGet(AI_SESS));if(s&&Array.isArray(s.msgs)){aiMsgs=s.msgs;aiCtx=s.ctx||null}}catch(e){}
 const saveAiSess=()=>ssSet(AI_SESS,JSON.stringify({msgs:aiMsgs,ctx:aiCtx}));
 const aiKey=()=>(LS.get(AI_KEY_LS)||"").trim();
-function maskKey(k){return k.length>10?k.slice(0,4)+"••••••"+k.slice(-4):"••••"}
-function aiRefreshKeyUI(){const k=aiKey();$("#aiKeyState").textContent=k?"· 저장됨 ("+maskKey(k)+")":"· 아직 없음";$("#aiKeyIn").value="";$("#aiKeyIn").placeholder=k?"저장된 키: "+maskKey(k)+" (바꾸려면 새 키 입력)":"AIza... 키 붙여넣기";
+function maskKey(k){k=String(k||"");return k.length>12?k.slice(0,5)+"••••••"+k.slice(-4):"••••"}
+function aiRefreshKeyUI(){const k=aiKey();$("#aiKeyState").textContent=k?"· 저장됨 ("+maskKey(k)+")":"· 아직 없음";$("#aiKeyIn").value="";$("#aiKeyIn").placeholder=k?"저장된 키: "+maskKey(k)+" (바꾸려면 새 키 입력)":"API 키 붙여넣기 (AIza… / AQ.…)";
 $("#aiKeyDel").disabled=!k;const m=LS.get(AI_MODEL_LS);$("#aiModelInfo").textContent=m?"사용 중인 모델: "+m:"모델은 자동으로 골라요 (최신 무료 모델부터 시도)";if(!k)$("#aiSetBox").open=true}
 $("#aiKeyShow").onclick=()=>{const i=$("#aiKeyIn");i.type=i.type==="password"?"text":"password";$("#aiKeyShow").textContent=i.type==="password"?"👁 보기":"🙈 숨기기"};
-$("#aiKeySave").onclick=()=>{const v=$("#aiKeyIn").value.trim().replace(/\s+/g,"");if(!v){toast("키를 붙여넣어 주세요.");return}
-if(!/^[A-Za-z0-9_\-]{20,}$/.test(v)){toast("키 형식이 이상해요. AI Studio에서 복사한 키 전체(AIza…)를 붙여넣어 주세요.",5000);return}
+$("#aiKeySave").onclick=()=>{const v=$("#aiKeyIn").value.replace(/[\s"'`\u201C\u201D\u2018\u2019]+/g,"");if(!v){toast("키를 붙여넣어 주세요.");return}
+if(v.length<20){toast("키가 너무 짧아요. AI Studio에서 복사한 키 전체를 붙여넣어 주세요.",5000);return}
 LS.set(AI_KEY_LS,v);LS.del(AI_MODEL_LS);$("#aiKeyIn").type="password";$("#aiKeyShow").textContent="👁 보기";aiRefreshKeyUI();$("#aiSetBox").open=false;toast("✅ 키를 저장했어요. 이제 대화를 시작해 보세요!")};
 $("#aiKeyDel").onclick=()=>{if(!confirm("저장된 Gemini API 키를 이 기기에서 삭제할까요?"))return;LS.del(AI_KEY_LS);LS.del(AI_MODEL_LS);aiRefreshKeyUI();toast("🗑 키를 삭제했어요.")};
 function aiRenderChips(){
@@ -454,7 +454,7 @@ function aiContents(){const out=[{role:"user",parts:[{text:AI_START}]}];
 aiMsgs.forEach(m=>{if(m.who==="me")out.push({role:"user",parts:[{text:m.text}]});else if(m.who==="ai")out.push({role:"model",parts:[{text:JSON.stringify({reply:m.text,reply_ko:m.ko||"",correction_ko:"",better_en:""})}]})});return out}
 class AiError extends Error{constructor(kind,msg,status){super(msg||kind);this.kind=kind;this.status=status}}
 async function aiCallModel(model,key,body){const c=new AbortController();const t=setTimeout(()=>c.abort(),45000);let r;
-try{r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent?key="+encodeURIComponent(key),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),signal:c.signal})}
+try{r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body:JSON.stringify(body),signal:c.signal})}
 catch(e){clearTimeout(t);throw new AiError(e&&e.name==="AbortError"?"timeout":"network",e&&e.message)}
 clearTimeout(t);let j=null;try{j=await r.json()}catch(e){j=null}
 if(!r.ok){const er=(j&&j.error)||{};const msg=er.message||("HTTP "+r.status);const st=er.status||"";const reasons=JSON.stringify(er.details||[]);
