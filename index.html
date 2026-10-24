@@ -67,6 +67,19 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:rgba(79,70,229,.2)}
 .trNav{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:.85rem;color:#555;flex-wrap:wrap}.trNav span{flex:1;text-align:center;min-width:140px}.trNav button{border:1px solid #c7d2fe;background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer}.trNav button:disabled{opacity:.4}
 .trBar{display:inline-block;width:90px;height:6px;background:#e5e7eb;border-radius:3px;vertical-align:middle;margin-left:6px;overflow:hidden}.trBar i{display:block;height:100%;background:#22c55e;transition:width .2s}
 .trErr{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:10px;text-align:left;line-height:1.5}.trErr small{color:#7f1d1d}.trErr button{margin-top:6px;border:0;background:#ef4444;color:#fff;border-radius:8px;padding:7px 12px;cursor:pointer}
+.sbox{position:relative;margin-bottom:8px}.sbox input{width:100%;border:1px solid #c7d2fe;border-radius:12px;padding:11px 38px 11px 38px;font-size:1rem;font-family:inherit;background:#fff}
+.sbox .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none}.sbox button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;font-size:1.1rem;color:#888;padding:6px 8px;cursor:pointer}
+.fchips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;margin:0 -2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}.fchips::-webkit-scrollbar{display:none}
+.fchips button{flex:none;border:1px solid #c7d2fe;background:#fff;color:#3730a3;border-radius:18px;padding:6px 12px;font-size:.88rem;cursor:pointer;white-space:nowrap}.fchips button.on{background:#4f46e5;color:#fff;border-color:#4f46e5}
+.fchips.lv button{font-size:.82rem;padding:4px 10px}.fchips.lv button.on{background:#0f766e;border-color:#0f766e}
+.tags{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0 2px}.tag{font-size:.7rem;font-weight:700;border-radius:10px;padding:1px 7px;background:#eef2ff;color:#3730a3}
+.tag.lv-초급{background:#dcfce7;color:#166534}.tag.lv-중급{background:#fef3c7;color:#92400e}.tag.lv-고급{background:#fee2e2;color:#991b1b}
+#count{font-size:.85rem;color:#666;margin:2px 0 8px}#empty{text-align:center;color:#777;padding:28px 8px;background:#fff;border-radius:12px}
+.keybox{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:10px 12px;margin-bottom:12px}
+.keybox .kh{font-size:.92rem;font-weight:700;color:#92400e}.keybox .kh small{font-weight:400;color:#a16207;margin-left:6px}
+.kchips{display:flex;flex-direction:column;gap:6px;margin-top:8px}.kchips button{display:flex;flex-direction:column;align-items:flex-start;text-align:left;border:1px solid #fcd34d;background:#fff;border-radius:10px;padding:7px 10px;cursor:pointer;font-family:inherit}
+.kchips button b{font-size:.98rem;color:#1f2937}.kchips button .ko{font-size:.82rem}.kchips button.pl{background:#f0fdf4;border-color:#22c55e}
+@media(min-width:560px){.kchips{flex-direction:row;flex-wrap:wrap}}
 </style></head><body>
 <header><button id="back" class="hidden">← 목록</button><h1 id="title">🗣️ 영어 말하기 연습</h1><button id="reset">기록 초기화</button></header>
 <main>
@@ -111,8 +124,13 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:rgba(79,70,229,.2)}
 <div id="aiStatus" class="pstat"></div>
 <div class="composer"><button class="mic" id="aiMic" title="말하기">🎤</button><textarea id="aiIn" placeholder="영어로 입력 (한국어도 OK)"></textarea><button class="send" id="aiSend">보내기</button></div>
 </div>
-<div id="home"><p style="margin-top:0">상황을 골라 연습해 보세요. 각 문장의 최고 점수가 저장됩니다.</p><div class="grid" id="grid"></div></div>
+<div id="home"><p style="margin-top:0;margin-bottom:8px">상황을 골라 연습해 보세요. 각 문장의 최고 점수가 저장됩니다.</p>
+<div class="sbox"><span class="si">🔍</span><input type="search" id="q" placeholder="상황·표현 검색 (예: 택시, 면접, warranty)" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><button id="qClear" class="hidden" aria-label="검색어 지우기">✕</button></div>
+<div class="fchips" id="catChips"></div><div class="fchips lv" id="lvChips"></div>
+<div id="count"></div><div class="grid" id="grid"></div><div id="empty" class="hidden">검색 결과가 없어요. 다른 단어로 찾아보거나 필터를 바꿔 보세요.</div></div>
 <div id="detail" class="hidden">
+<div class="tags" id="scMeta" style="margin:0 0 8px"></div>
+<div class="keybox" id="keyBox"><div class="kh">💡 핵심 표현 <small>눌러서 들어 보세요</small></div><div class="kchips" id="kChips"></div></div>
 <div class="controls">
 <div class="tabs"><button data-m="practice" class="on">문장 연습</button> <button data-m="role">역할극</button></div>
 <label>속도 <input type="range" id="rate" min="0.5" max="1.3" step="0.1" value="0.9"> <span id="rateV">0.9</span>x</label>
@@ -161,78 +179,648 @@ try{if(IS_INAPP){document.getElementById("inapp").classList.remove("hidden");
 document.getElementById("inappHint").textContent=IS_KAKAO?"자동으로 외부 브라우저를 여는 중이에요. 안 열리면 위 버튼을 눌러주세요.":(IS_IOS?"안 열리면 ⋯ 메뉴 → 'Safari로 열기'를 눌러주세요.":"안 열리면 메뉴 → '다른 브라우저로 열기'를 눌러주세요.");
 document.getElementById("openExt").onclick=openExternal;document.getElementById("copyUrl").onclick=copyUrl;
 if(IS_KAKAO&&!/[?&]noext=1/.test(location.search)){try{if(!sessionStorage.getItem("extTried")){sessionStorage.setItem("extTried","1");setTimeout(openExternal,300)}}catch(e){setTimeout(openExternal,300)}}}}catch(e){}
+// ===== 콘텐츠 데이터: 상황별 대화 (id=진행 기록 키, l=[화자,영어,한국어,(예전 문장 번호)], k=핵심 표현) =====
 const SC=[
-{id:"cafe",emo:"☕",t:"카페 주문",roles:["Barista","You"],l:[
-["A","Hi, what can I get for you today?","안녕하세요, 오늘 뭘 드릴까요?"],
-["B","Can I get a medium iced latte, please?","아이스 라떼 미디엄 사이즈 주시겠어요?"],
-["A","Sure. Would you like it with regular milk or oat milk?","네. 일반 우유로 드릴까요, 귀리 우유로 드릴까요?"],
-["B","Oat milk, please.","귀리 우유로 주세요."],
-["A","Is that for here or to go?","드시고 가세요, 가져가세요?"],
-["B","To go, please.","가져갈게요."],
-["A","That will be five dollars.","5달러입니다."],
-["B","Here you are. Thank you!","여기요. 감사합니다!"]]},
-{id:"airport",emo:"✈️",t:"공항",roles:["Agent","You"],l:[
-["A","Good morning. May I see your passport, please?","안녕하세요. 여권 좀 보여주시겠어요?"],
-["B","Of course. Here it is.","물론이죠. 여기 있습니다."],
-["A","Where are you flying to today?","오늘 어디로 가시나요?"],
-["B","I am flying to New York.","뉴욕으로 갑니다."],
-["A","How many bags are you checking in?","수하물은 몇 개 부치시나요?"],
-["B","Just one bag.","한 개만요."],
-["A","Would you like a window or an aisle seat?","창가석과 통로석 중 어느 쪽을 원하세요?"],
-["B","A window seat, please.","창가석으로 주세요."]]},
-{id:"hotel",emo:"🏨",t:"호텔 체크인",roles:["Receptionist","You"],l:[
-["A","Welcome. How can I help you?","어서 오세요. 무엇을 도와드릴까요?"],
-["B","Hi, I have a reservation under the name Kim.","안녕하세요, 김이라는 이름으로 예약했어요."],
-["A","Let me check. You are staying for three nights, right?","확인해 볼게요. 3박 하시는 거 맞죠?"],
-["B","Yes, that is right.","네, 맞아요."],
-["A","Here is your room key. Your room is on the fifth floor.","객실 키입니다. 방은 5층이에요."],
-["B","What time is breakfast?","아침 식사는 몇 시인가요?"],
-["A","Breakfast is from seven to ten.","아침은 7시부터 10시까지입니다."],
-["B","Great, thank you so much.","좋네요, 정말 감사합니다."]]},
-{id:"direction",emo:"🗺️",t:"길 묻기",roles:["Local","You"],l:[
-["B","Excuse me, could you help me?","실례합니다, 좀 도와주실 수 있나요?"],
-["A","Sure, what do you need?","물론이죠, 뭐가 필요하세요?"],
-["B","How do I get to the subway station?","지하철역에 어떻게 가나요?"],
-["A","Go straight two blocks and turn left.","두 블록 직진해서 왼쪽으로 도세요."],
-["B","Is it far from here?","여기서 먼가요?"],
-["A","No, it is about a five minute walk.","아니요, 걸어서 5분 정도예요."],
-["B","Thank you for your help.","도와주셔서 감사합니다."]]},
-{id:"intro",emo:"🙋",t:"자기소개",roles:["Friend","You"],l:[
-["A","Hi, I don't think we've met. I'm Alex.","안녕하세요, 처음 뵙는 것 같네요. 저는 알렉스예요."],
-["B","Nice to meet you. My name is Minji.","만나서 반가워요. 제 이름은 민지예요."],
-["A","Where are you from?","어디 출신이에요?"],
-["B","I am from Seoul, Korea.","한국 서울에서 왔어요."],
-["A","What do you do?","무슨 일 하세요?"],
-["B","I work as a designer.","디자이너로 일해요."],
-["A","What do you like to do in your free time?","여가 시간에 뭐 하는 걸 좋아해요?"],
-["B","I like watching movies and traveling.","영화 보기와 여행을 좋아해요."]]},
-{id:"restaurant",emo:"🍽️",t:"식당",roles:["Server","You"],l:[
-["A","Good evening. Do you have a reservation?","안녕하세요. 예약하셨나요?"],
-["B","No, we don't. A table for two, please.","아니요. 두 명 자리 부탁해요."],
-["A","Right this way. Here are your menus.","이쪽으로 오세요. 메뉴판입니다."],
-["B","What do you recommend?","추천해 주실 만한 게 있나요?"],
-["A","Our steak is very popular.","저희 스테이크가 아주 인기 있어요."],
-["B","I will have the steak, medium rare.","스테이크로 할게요, 미디엄 레어로요."],
-["A","Anything to drink?","음료는요?"],
-["B","Just water, please.","물만 주세요."]]},
-{id:"shopping",emo:"🛍️",t:"쇼핑",roles:["Clerk","You"],l:[
-["A","Hi, are you looking for anything in particular?","안녕하세요, 특별히 찾으시는 게 있나요?"],
-["B","I am looking for a jacket.","재킷을 찾고 있어요."],
-["A","What size do you wear?","어떤 사이즈 입으세요?"],
-["B","Medium. Can I try this on?","미디엄이요. 이거 입어봐도 되나요?"],
-["A","Of course. The fitting room is over there.","물론이죠. 탈의실은 저쪽이에요."],
-["B","It fits well. How much is it?","잘 맞네요. 얼마예요?"],
-["A","It is sixty dollars, but it is on sale today.","60달러인데 오늘 세일 중이에요."],
-["B","Great, I will take it.","좋아요, 이걸로 할게요."]]},
-{id:"hospital",emo:"🏥",t:"병원",roles:["Doctor","You"],l:[
-["A","Hello. What seems to be the problem?","안녕하세요. 어디가 불편하세요?"],
-["B","I have a headache and a sore throat.","두통이 있고 목이 아파요."],
-["A","How long have you had these symptoms?","증상이 얼마나 되셨나요?"],
-["B","Since yesterday morning.","어제 아침부터요."],
-["A","Do you have a fever?","열이 있나요?"],
-["B","Yes, I think I have a slight fever.","네, 약간 열이 있는 것 같아요."],
-["A","I will give you some medicine. Get plenty of rest.","약을 처방해 드릴게요. 푹 쉬세요."],
-["B","Thank you, doctor.","감사합니다, 선생님."]]}
+{id:"airport",emo:"✈️",t:"공항 체크인",cat:"여행",lv:"초급",roles:["Agent","You"],k:[
+["I'd like to check in.","체크인하고 싶어요."],
+["Would you like a window or an aisle seat?","창가석과 통로석 중 어느 쪽을 원하세요?"],
+["You're right at the limit.","딱 무게 제한에 걸리네요."],
+["Here's your boarding pass.","탑승권 여기 있습니다."],
+["Where can I find gate 32?","32번 게이트는 어디에 있나요?"],
+["The flight is on time.","비행기는 정시에 출발해요."]],l:[
+["A","Good morning. May I see your passport, please?","안녕하세요. 여권 좀 보여주시겠어요?",0],
+["B","Of course. Here it is.","물론이죠. 여기 있습니다.",1],
+["A","Thank you. Where are you flying to today?","감사합니다. 오늘 어디로 가시나요?"],
+["B","I am flying to New York.","뉴욕으로 갑니다.",3],
+["A","How many bags are you checking in?","수하물은 몇 개 부치시나요?",4],
+["B","Just one bag.","한 개만요.",5],
+["A","Could you put it on the scale for me? It's twenty-three kilos, so you're right at the limit.","저울 위에 올려 주시겠어요? 23킬로라서 딱 무게 제한에 걸리네요."],
+["B","Phew, that was close! Is my carry-on okay? It's just a small backpack.","휴, 아슬아슬했네요! 기내 휴대 가방은 괜찮나요? 작은 배낭 하나예요."],
+["A","That's fine. Would you like a window or an aisle seat?","괜찮습니다. 창가석과 통로석 중 어느 쪽을 원하세요?"],
+["B","A window seat, please.","창가석으로 주세요.",7],
+["A","Here's your boarding pass. Boarding starts at nine forty at gate 32, and the flight is on time.","탑승권 여기 있습니다. 탑승은 9시 40분에 32번 게이트에서 시작하고, 비행기는 정시에 출발해요."],
+["B","Where can I find gate 32?","32번 게이트는 어디에 있나요?"],
+["A","Just go through security and follow the signs. It's about a ten-minute walk.","보안 검색대를 통과한 다음 표지판을 따라가세요. 걸어서 10분쯤 걸려요."],
+["B","Thanks a lot. Have a nice day!","정말 고맙습니다. 좋은 하루 보내세요!"]]},
+{id:"hotel",emo:"🏨",t:"호텔 체크인",cat:"여행",lv:"초급",roles:["Receptionist","You"],k:[
+["I have a reservation under the name Kim.","김이라는 이름으로 예약했어요."],
+["Is breakfast included?","조식이 포함되어 있나요?"],
+["What's the Wi-Fi password?","와이파이 비밀번호가 뭐예요?"],
+["I'm a light sleeper.","제가 잠귀가 밝아요."],
+["What time is checkout?","체크아웃은 몇 시예요?"],
+["Could you keep my luggage?","짐을 맡아 주시겠어요?"]],l:[
+["A","Welcome. How can I help you?","어서 오세요. 무엇을 도와드릴까요?",0],
+["B","Hi, I have a reservation under the name Kim.","안녕하세요, 김이라는 이름으로 예약했어요.",1],
+["A","Let me check. You are staying for three nights, right?","확인해 볼게요. 3박 하시는 거 맞죠?",2],
+["B","Yes, that is right.","네, 맞아요.",3],
+["A","Could I see your ID and a credit card for the deposit?","신분증과 보증금 결제용 신용카드를 보여주시겠어요?"],
+["B","Sure, here you go. Is breakfast included?","네, 여기요. 조식이 포함되어 있나요?"],
+["A","Yes, it is. Breakfast is from seven to ten.","네, 포함이에요. 아침 식사는 7시부터 10시까지입니다."],
+["B","Great. And what's the Wi-Fi password?","좋네요. 그리고 와이파이 비밀번호가 뭐예요?"],
+["A","It's on the key card holder. Here is your room key. Your room is on the fifth floor.","키 카드 케이스에 적혀 있어요. 객실 키입니다. 방은 5층이에요."],
+["B","Would it be possible to get a room away from the elevator? I'm a light sleeper.","엘리베이터에서 먼 방으로 받을 수 있을까요? 제가 잠귀가 밝아서요."],
+["A","Of course. I'll switch you to a quieter room at the end of the hall. Checkout is at eleven.","물론이죠. 복도 끝에 있는 더 조용한 방으로 바꿔 드릴게요. 체크아웃은 11시입니다."],
+["B","Could you keep my luggage after checkout? My flight isn't until the evening.","체크아웃 후에 짐을 맡아 주실 수 있나요? 비행기가 저녁이라서요."],
+["A","No problem at all. Just ask at the front desk.","전혀 문제없어요. 프런트 데스크에 말씀하세요."],
+["B","Great, thank you so much.","좋네요, 정말 감사합니다.",7]]},
+{id:"direction",emo:"🗺️",t:"길 묻기",cat:"여행",lv:"초급",roles:["Local","You"],k:[
+["Could you say that again?","다시 한번 말씀해 주시겠어요?"],
+["I didn't catch that.","못 알아들었어요."],
+["Go straight and turn left.","직진해서 왼쪽으로 도세요."],
+["It's about a five-minute walk.","걸어서 5분 정도예요."],
+["You can't miss it.","금방 찾을 수 있어요. (못 찾을 리가 없어요)"],
+["It's right across from the bank.","은행 바로 맞은편이에요."]],l:[
+["B","Excuse me, could you help me?","실례합니다, 좀 도와주실 수 있나요?",0],
+["A","Sure, what do you need?","물론이죠, 뭐가 필요하세요?",1],
+["B","How do I get to the subway station?","지하철역에 어떻게 가나요?",2],
+["A","Go straight two blocks and turn left.","두 블록 직진해서 왼쪽으로 도세요.",3],
+["B","Sorry, could you say that again? I didn't catch that.","죄송하지만 다시 한번 말씀해 주시겠어요? 못 알아들었어요."],
+["A","Sure. Go straight for two blocks, then turn left at the traffic light.","그럼요. 두 블록 직진한 다음 신호등에서 왼쪽으로 도세요."],
+["B","Is it far from here?","여기서 먼가요?",4],
+["A","No, it is about a five minute walk.","아니요, 걸어서 5분 정도예요.",5],
+["B","Is there anything I should look out for?","눈여겨볼 만한 게 있을까요?"],
+["A","You can't miss it. It's right across from the big bookstore, next to the bank.","금방 찾으실 거예요. 큰 서점 바로 맞은편이고 은행 옆이에요."],
+["B","Got it. Is there a convenience store around here, too? I need to buy some water.","알겠어요. 근처에 편의점도 있나요? 물을 좀 사야 해서요."],
+["A","Yes, there's one on your way, just past the pharmacy on the right.","네, 가시는 길에 하나 있어요. 오른쪽 약국 바로 지나서요."],
+["B","Perfect. Thank you for your help.","잘됐네요. 도와주셔서 감사합니다."],
+["A","No problem. Enjoy your trip!","별거 아니에요. 즐거운 여행 되세요!"]]},
+{id:"transit",emo:"🚇",t:"버스·지하철",cat:"여행",lv:"초급",roles:["Station Staff","You"],k:[
+["Which line should I take to get to the museum?","박물관에 가려면 어느 호선을 타야 하나요?"],
+["Do I need to transfer?","갈아타야 하나요?"],
+["Get off at the fourth stop.","네 번째 정류장에서 내리세요."],
+["Where can I buy a ticket?","표는 어디서 사나요?"],
+["You can just tap in and out.","카드를 찍고 타고 찍고 내리시면 돼요."],
+["What time does the last train run?","막차는 몇 시예요?"]],l:[
+["B","Excuse me, which line should I take to get to the City Museum?","실례합니다, 시립박물관에 가려면 어느 호선을 타야 하나요?"],
+["A","Take line 2 toward Riverside and get off at the fourth stop.","2호선 리버사이드 방면을 타고 네 번째 정거장에서 내리세요."],
+["B","Do I need to transfer anywhere?","어디서 갈아타야 하나요?"],
+["A","No, it's a direct train. But rush hour is about to start, so it might be crowded.","아니요, 직통이에요. 그런데 곧 러시아워가 시작돼서 붐빌 수 있어요."],
+["B","Where can I buy a ticket?","표는 어디서 살 수 있나요?"],
+["A","The ticket machines are over there. You can also use a transit card and just tap in and out.","발매기는 저쪽에 있어요. 교통카드를 쓰시면 찍고 타고 찍고 내리면 돼요."],
+["B","How much is a single ride?","1회권은 얼마예요?"],
+["A","It's two fifty for a single ride, or you can get a day pass for seven dollars.","1회권은 2달러 50센트고, 1일권은 7달러예요."],
+["B","A day pass sounds better. I'll be going around the city all day. Which platform is it?","1일권이 낫겠네요. 하루 종일 시내를 돌아다닐 거예요. 몇 번 승강장이에요?"],
+["A","Platform 3, on your left. The next train comes in about four minutes.","3번 승강장, 왼쪽이에요. 다음 열차는 4분쯤 뒤에 와요."],
+["B","Thank you! One last thing. What time does the last train run?","감사합니다! 마지막으로 하나만요. 막차는 몇 시예요?"],
+["A","The last train leaves around midnight, so don't miss it!","막차는 자정쯤 떠나니까 놓치지 마세요!"]]},
+{id:"taxi",emo:"🚕",t:"택시",cat:"여행",lv:"초급",roles:["Driver","You"],k:[
+["To the Grand Central Hotel, please.","그랜드 센트럴 호텔로 가 주세요."],
+["I'm in a bit of a hurry.","제가 좀 급해요."],
+["How much will it be, roughly?","대략 얼마나 나올까요?"],
+["Could you drop me off in front of the entrance?","입구 앞에 내려 주시겠어요?"],
+["Keep the change.","거스름돈은 가지세요."],
+["Have a good one!","좋은 하루 보내세요! (편하게 하는 작별 인사)"]],l:[
+["A","Hi there. Where to?","안녕하세요. 어디로 모실까요?"],
+["B","To the Grand Central Hotel, please.","그랜드 센트럴 호텔로 가 주세요."],
+["A","Sure thing. Do you have a preferred route?","알겠습니다. 원하시는 길이 있으세요?"],
+["B","I'm in a bit of a hurry. Which way is the fastest?","제가 좀 급해요. 어느 길이 제일 빠른가요?"],
+["A","The highway is faster, but there's a lot of traffic right now. It might take about twenty-five minutes.","고속도로가 더 빠르긴 한데 지금 차가 많아요. 25분쯤 걸릴 것 같아요."],
+["B","That's fine. Could you turn up the air conditioning, please? It's pretty hot in here.","괜찮아요. 에어컨을 좀 세게 틀어 주시겠어요? 안이 꽤 덥네요."],
+["A","No problem. How's that?","그럼요. 이 정도면 어때요?"],
+["B","Perfect. By the way, how much will it be, roughly?","좋아요. 그런데 대략 얼마나 나올까요?"],
+["A","It should be around twenty-five dollars, depending on traffic.","교통 상황에 따라 다르지만 25달러쯤 나올 거예요."],
+["B","Okay. Could you drop me off right in front of the main entrance?","알겠어요. 정문 바로 앞에 내려 주시겠어요?"],
+["A","Sure. Here we are. That'll be twenty-six fifty.","물론이죠. 도착했습니다. 26달러 50센트입니다."],
+["B","Here's thirty. Keep the change.","여기 30달러요. 거스름돈은 가지세요."],
+["A","Thank you very much. Don't forget your bag!","정말 감사합니다. 가방 두고 내리지 마세요!"],
+["B","Thanks, have a good one!","고마워요, 좋은 하루 보내세요!"]]},
+{id:"transfer",emo:"🔄",t:"공항 환승",cat:"여행",lv:"중급",roles:["Agent","You"],k:[
+["I'm going to miss my connection.","환승편을 놓칠 것 같아요."],
+["Is there any chance of getting on a later flight?","더 늦은 비행기를 탈 수 있을까요?"],
+["I can rebook you at no extra charge.","추가 요금 없이 다시 예약해 드릴게요."],
+["You'll have a three-hour layover.","환승 대기 시간이 3시간 정도 됩니다."],
+["Will my checked bag be transferred automatically?","부친 짐은 자동으로 옮겨지나요?"],
+["Thank you for going the extra mile.","신경 써 주셔서 정말 감사해요."]],l:[
+["B","Excuse me, my flight from Incheon was delayed, and I'm afraid I'm going to miss my connection to Toronto.","실례합니다, 인천에서 오는 비행기가 지연돼서 토론토행 환승편을 놓칠 것 같아요."],
+["A","Let me take a look. Could I see your boarding pass?","확인해 볼게요. 탑승권을 보여주시겠어요?"],
+["B","Sure. It's the four fifteen flight to Toronto.","네. 4시 15분 토론토행 비행기예요."],
+["A","I'm afraid that flight is already boarding, and the gate closes in ten minutes. It's at the other end of the terminal, so you'd have to run.","죄송하지만 그 비행기는 이미 탑승 중이고 10분 뒤에 게이트가 닫혀요. 터미널 반대쪽 끝이라 뛰어가셔야 할 거예요."],
+["B","Is there any chance of getting on a later flight?","더 늦은 비행기를 탈 수 있을까요?"],
+["A","There's another one at seven thirty tonight. Since the delay wasn't your fault, I can rebook you at no extra charge.","오늘 밤 7시 30분에 한 편 더 있어요. 지연은 고객님 잘못이 아니니 추가 요금 없이 다시 예약해 드릴게요."],
+["B","That would be great. Will my checked bag be transferred automatically?","그렇게 해 주시면 좋겠어요. 부친 짐은 자동으로 옮겨지나요?"],
+["A","Yes, we'll move it over for you. You'll have about a three-hour layover, so I'll give you a meal voucher.","네, 저희가 옮겨 드릴게요. 환승 대기 시간이 3시간쯤 되니 식사 쿠폰을 드릴게요."],
+["B","Thank you. Is there somewhere I can charge my phone and rest in the meantime?","감사합니다. 그동안 휴대폰을 충전하고 쉴 만한 곳이 있을까요?"],
+["A","There's a quiet area near gate 12 with charging stations. Here's your new boarding pass.","12번 게이트 근처에 충전 시설이 있는 조용한 공간이 있어요. 새 탑승권 여기 있습니다."],
+["B","Thank you for going the extra mile. I really appreciate it.","신경 써 주셔서 감사해요. 정말 고맙습니다."],
+["A","My pleasure. Safe travels!","별말씀을요. 안전한 여행 되세요!"]]},
+{id:"hotelcomplaint",emo:"😤",t:"호텔 불만",cat:"여행",lv:"중급",roles:["Front Desk","You"],k:[
+["I'm afraid there's a problem with the air conditioning.","죄송하지만 에어컨에 문제가 있어요."],
+["It's been like this since last night.","어젯밤부터 계속 이래요."],
+["I didn't get a wink of sleep.","한숨도 못 잤어요."],
+["Could you move me to a different room?","다른 방으로 옮겨 주실 수 있나요?"],
+["I'd like some kind of compensation.","보상을 좀 받고 싶어요."],
+["I'll take twenty percent off tonight's rate.","오늘 밤 요금에서 20퍼센트를 깎아 드리겠습니다."]],l:[
+["B","Hi, I'm calling from room 508. I'm afraid there's a problem with the air conditioning.","안녕하세요, 508호예요. 죄송하지만 에어컨에 문제가 있어요."],
+["A","I'm so sorry to hear that. What seems to be the problem?","불편을 드려 정말 죄송합니다. 어떤 문제인가요?"],
+["B","It's not cooling at all, and the room is like an oven. It's been like this since last night.","전혀 시원해지지 않아서 방이 찜통 같아요. 어젯밤부터 계속 이래요."],
+["A","I apologize for the inconvenience. I'll send someone from maintenance right away.","불편을 드려 죄송합니다. 바로 시설 담당자를 보내겠습니다."],
+["B","Thank you. Also, the people next door were very loud until two in the morning. I didn't get a wink of sleep.","감사합니다. 그리고 옆방 사람들이 새벽 2시까지 너무 시끄러웠어요. 한숨도 못 잤어요."],
+["A","That's not acceptable. I'm terribly sorry. Would you like us to move you to a different room?","용납될 수 없는 일이네요. 정말 죄송합니다. 다른 방으로 옮겨 드릴까요?"],
+["B","Yes, please. But I'd rather not pack everything again. Could someone help me with my bags?","네, 부탁드려요. 다만 짐을 다시 다 싸고 싶지는 않아요. 누가 짐 옮기는 걸 도와줄 수 있을까요?"],
+["A","Absolutely. A porter will bring your things to the new room. It's a quiet room on the tenth floor with a city view.","물론이죠. 포터가 짐을 새 방으로 옮겨 드릴 거예요. 10층에 있는 조용하고 시내가 보이는 방입니다."],
+["B","That sounds good. I'd also like some kind of compensation for the trouble, if possible.","좋네요. 그리고 가능하다면 이 불편에 대한 보상도 좀 받고 싶어요."],
+["A","Of course. I'll take twenty percent off tonight's rate and offer you a free breakfast tomorrow.","그럼요. 오늘 밤 요금에서 20퍼센트를 깎아 드리고 내일 조식도 무료로 드리겠습니다."],
+["B","I appreciate that. That's very fair.","감사합니다. 아주 합리적이네요."],
+["A","Again, I'm so sorry. Please let me know if there's anything else we can do.","다시 한번 죄송합니다. 더 도와드릴 일이 있으면 말씀해 주세요."]]},
+{id:"cafe",emo:"☕",t:"카페 주문",cat:"일상",lv:"초급",roles:["Barista","You"],k:[
+["Can I get a medium iced latte?","아이스 라떼 미디엄 사이즈 주시겠어요?"],
+["Could you go easy on the syrup?","시럽은 적게 넣어 주시겠어요?"],
+["Could you warm it up?","데워 주시겠어요?"],
+["Is that for here or to go?","드시고 가세요, 가져가세요?"],
+["Can I pay by card?","카드로 계산해도 되나요?"],
+["Have a great day!","좋은 하루 보내세요!"]],l:[
+["A","Hi, what can I get for you today?","안녕하세요, 오늘 뭘 드릴까요?",0],
+["B","Can I get a medium iced latte, please?","아이스 라떼 미디엄 사이즈 주시겠어요?",1],
+["A","Sure. Would you like it with regular milk or oat milk?","네. 일반 우유로 드릴까요, 귀리 우유로 드릴까요?",2],
+["B","Oat milk, please.","귀리 우유로 주세요.",3],
+["A","Great. Would you like to add an extra shot for fifty cents?","좋아요. 50센트 내고 샷을 추가하시겠어요?"],
+["B","No, thanks. Actually, could you go easy on the syrup? I don't like it too sweet.","아니요, 괜찮아요. 아, 시럽은 적게 넣어 주시겠어요? 너무 단 건 안 좋아해서요."],
+["A","No problem. Anything to eat? We have fresh croissants and blueberry muffins.","알겠어요. 드실 것도 필요하세요? 갓 구운 크루아상과 블루베리 머핀이 있어요."],
+["B","A blueberry muffin sounds good. Could you warm it up?","블루베리 머핀이 좋겠네요. 데워 주시겠어요?"],
+["A","Sure thing. Is that for here or to go?","물론이죠. 드시고 가세요, 가져가세요?"],
+["B","To go, please.","가져갈게요.",5],
+["A","That comes to eight fifty in total.","총 8달러 50센트입니다."],
+["B","Can I pay by card?","카드로 계산해도 되나요?"],
+["A","Absolutely. Just tap it right here. Your drink will be ready in a couple of minutes.","물론이죠. 여기에 대시면 돼요. 음료는 2~3분 안에 나옵니다."],
+["B","Thank you so much. Have a great day!","정말 감사합니다. 좋은 하루 보내세요!"]]},
+{id:"restaurant",emo:"🍽️",t:"식당",cat:"일상",lv:"초급",roles:["Server","You"],k:[
+["A table for two, please.","두 명 자리 부탁해요."],
+["What do you recommend?","추천해 주실 만한 게 있나요?"],
+["I'll have the steak, medium rare.","스테이크로 할게요, 미디엄 레어로요."],
+["Anything to drink?","음료는 뭘로 하시겠어요?"],
+["Could we get the check, please?","계산서 좀 주시겠어요?"],
+["Separate checks, please.","따로따로 계산해 주세요."]],l:[
+["A","Good evening. Do you have a reservation?","안녕하세요. 예약하셨나요?",0],
+["B","No, we don't. A table for two, please.","아니요. 두 명 자리 부탁해요.",1],
+["A","Would you like to sit inside or outside? Outside is a bit of a wait.","안쪽과 바깥쪽 중 어디가 좋으세요? 바깥쪽은 조금 기다리셔야 해요."],
+["B","Inside is fine. We don't mind.","안쪽도 괜찮아요. 상관없어요."],
+["A","Right this way. Here are your menus.","이쪽으로 오세요. 메뉴판입니다.",2],
+["B","What do you recommend? My friend is vegetarian.","추천해 주실 만한 게 있나요? 제 친구가 채식주의자예요."],
+["A","Our steak is very popular, and the mushroom risotto is delicious. It's completely vegetarian.","저희 스테이크가 아주 인기 있고, 버섯 리조또도 맛있어요. 완전 채식이에요."],
+["B","Then I'll have the steak, medium rare, and she'll have the risotto.","그럼 저는 스테이크를 미디엄 레어로, 친구는 리조또로 할게요."],
+["A","Anything to drink?","음료는요?",6],
+["B","Just water, please.","물만 주세요.",7],
+["A","Sure. I'll be right back with your drinks.","네. 곧 음료 가져다 드릴게요."],
+["B","Thank you. Excuse me, could we get the check, please?","감사합니다. 저기요, 계산서 좀 주시겠어요?"],
+["A","Of course. Would you like to pay together or separately?","그럼요. 같이 계산하시겠어요, 따로 하시겠어요?"],
+["B","Separate checks, please.","따로따로 계산해 주세요."],
+["A","No problem. I'll be right back.","알겠습니다. 금방 오겠습니다."]]},
+{id:"shopping",emo:"🛍️",t:"옷 쇼핑",cat:"일상",lv:"초급",roles:["Clerk","You"],k:[
+["I'm looking for a jacket.","재킷을 찾고 있어요."],
+["Can I try this on?","이거 입어봐도 되나요?"],
+["Do you have it in a larger size?","더 큰 사이즈도 있나요?"],
+["It's on sale today.","오늘 세일 중이에요."],
+["I'll take it.","이걸로 할게요."],
+["What's your return policy?","환불 규정이 어떻게 되나요?"]],l:[
+["A","Hi, are you looking for anything in particular?","안녕하세요, 특별히 찾으시는 게 있나요?",0],
+["B","I am looking for a jacket.","재킷을 찾고 있어요.",1],
+["A","What size do you wear?","어떤 사이즈 입으세요?",2],
+["B","Medium. Can I try this on?","미디엄이요. 이거 입어봐도 되나요?",3],
+["A","Of course. The fitting room is over there.","물론이죠. 탈의실은 저쪽이에요.",4],
+["B","It's a little tight around the shoulders. Do you have it in a large?","어깨가 좀 끼네요. 라지 사이즈도 있나요?"],
+["A","Let me check in the back. Here you go. How does this one feel?","안쪽 창고에서 확인해 볼게요. 여기 있습니다. 이건 어떠세요?"],
+["B","It fits well. How much is it?","잘 맞네요. 얼마예요?",5],
+["A","It is sixty dollars, but it is on sale today.","60달러인데 오늘 세일 중이에요.",6],
+["B","Great, I will take it.","좋아요, 이걸로 할게요.",7],
+["A","Would you like a bag? Will that be cash or card?","봉투 필요하세요? 현금이세요, 카드세요?"],
+["B","Card, please. And what's your return policy in case it doesn't work out?","카드로 할게요. 그리고 혹시 안 맞을 경우 환불 규정이 어떻게 되나요?"],
+["A","You can return or exchange it within thirty days with the receipt.","영수증이 있으면 30일 이내에 환불이나 교환이 가능해요."],
+["B","Perfect. Thanks for your help!","좋아요. 도와주셔서 감사합니다!"]]},
+{id:"hospital",emo:"🏥",t:"병원",cat:"일상",lv:"초급",roles:["Doctor","You"],k:[
+["I have a headache and a sore throat.","두통이 있고 목이 아파요."],
+["I've had these symptoms since yesterday.","어제부터 이런 증상이 있었어요."],
+["I have a slight fever.","열이 좀 있어요."],
+["I'm allergic to penicillin.","페니실린 알레르기가 있어요."],
+["Take it three times a day after meals.","하루 세 번 식후에 드세요."],
+["Get plenty of rest.","푹 쉬세요."]],l:[
+["A","Hello. What seems to be the problem?","안녕하세요. 어디가 불편하세요?",0],
+["B","I have a headache and a sore throat.","두통이 있고 목이 아파요.",1],
+["A","How long have you had these symptoms?","증상이 얼마나 되셨나요?",2],
+["B","Since yesterday morning.","어제 아침부터요.",3],
+["A","Do you have a fever?","열이 있나요?",4],
+["B","Yes, I think I have a slight fever.","네, 약간 열이 있는 것 같아요.",5],
+["A","Let me take your temperature. It's thirty-eight degrees Celsius, so you do have a slight fever. Have you been coughing?","체온을 재 볼게요. 섭씨 38도라서 약간 열이 있네요. 기침도 하셨나요?"],
+["B","Yes, a little, and I feel really tired and achy all over.","네, 조금요. 그리고 몸이 너무 피곤하고 온몸이 쑤셔요."],
+["A","Do you have any allergies to medication?","약물 알레르기가 있으신가요?"],
+["B","I'm allergic to penicillin.","페니실린 알레르기가 있어요."],
+["A","Thanks for telling me. I'll prescribe something else. Take it three times a day after meals, and get plenty of rest.","말씀해 주셔서 고맙습니다. 다른 약으로 처방해 드릴게요. 하루 세 번 식후에 드시고, 푹 쉬세요."],
+["B","Is it okay to go to work tomorrow?","내일 출근해도 괜찮을까요?"],
+["A","I'd stay home and rest. Drink plenty of fluids, too. If it doesn't get better in three days, come back.","집에서 쉬시길 권해요. 물도 충분히 마시고요. 3일 안에 나아지지 않으면 다시 오세요."],
+["B","Thank you, doctor.","감사합니다, 선생님.",7]]},
+{id:"pharmacy",emo:"💊",t:"약국",cat:"일상",lv:"초급",roles:["Pharmacist","You"],k:[
+["Do you have anything for a cold?","감기에 먹을 만한 약 있나요?"],
+["I'm allergic to aspirin.","아스피린 알레르기가 있어요."],
+["Does it make you drowsy?","졸음이 오는 약인가요?"],
+["Take one tablet every six hours.","6시간마다 한 알씩 드세요."],
+["Not on an empty stomach.","빈속에는 드시지 마세요."],
+["Do I need a prescription?","처방전이 필요한가요?"]],l:[
+["B","Hi, do you have anything for a cold? I have a runny nose and a cough.","안녕하세요, 감기에 먹을 만한 약 있나요? 콧물이 나고 기침이 나요."],
+["A","Do you have a fever or a sore throat?","열이나 목 아픈 증상은 있으세요?"],
+["B","Just a mild sore throat.","목이 살짝 아픈 정도예요."],
+["A","Are you taking any other medication?","다른 약을 복용 중이세요?"],
+["B","No, nothing at the moment. But I'm allergic to aspirin, so please make sure it doesn't contain any.","아니요, 지금은 없어요. 그런데 아스피린 알레르기가 있어서 들어 있지 않은 걸로 부탁드려요."],
+["A","Good to know. This cold medicine is aspirin-free. Take one tablet every six hours, but not on an empty stomach.","알려 주셔서 다행이에요. 이 감기약은 아스피린이 없어요. 6시간마다 한 알씩, 빈속에는 드시지 마세요."],
+["B","Does it make you drowsy? I have to drive later.","졸음이 오는 약인가요? 이따가 운전해야 해서요."],
+["A","This one can make you a little sleepy, so I'd take this non-drowsy one instead.","이건 약간 졸릴 수 있으니 졸음이 안 오는 이쪽 제품을 드세요."],
+["B","That's better. And do you have throat lozenges?","그게 낫겠네요. 목 사탕도 있나요?"],
+["A","Yes, they're on the shelf by the register. The honey lemon flavor is quite popular.","네, 계산대 옆 선반에 있어요. 꿀 레몬 맛이 꽤 인기예요."],
+["B","I'll take a box. Do I need a prescription for any of these?","한 통 주세요. 이 중에 처방전이 필요한 게 있나요?"],
+["A","No, they're all over the counter. That comes to eighteen dollars.","아니요, 전부 처방전 없이 살 수 있는 약이에요. 18달러입니다."],
+["B","Here you go. Thank you!","여기요. 감사합니다!"],
+["A","Feel better soon!","빨리 낫길 바랄게요!"]]},
+{id:"restcomplaint",emo:"🍳",t:"식당 클레임",cat:"일상",lv:"중급",roles:["Server","You"],k:[
+["There's a problem with my order.","주문한 음식에 문제가 있어요."],
+["I ordered it medium rare, but this is well done.","미디엄 레어로 주문했는데 이건 웰던이에요."],
+["Could you have it redone?","다시 만들어 주시겠어요?"],
+["There's a mistake on the bill.","계산서에 실수가 있어요."],
+["The drinks are on the house.","음료는 저희가 서비스로 드릴게요."],
+["I'm a bit disappointed.","좀 실망스러워요."]],l:[
+["B","Excuse me, could I have a word with you? There's a problem with my order.","실례합니다, 잠깐 말씀 좀 나눌 수 있을까요? 주문한 음식에 문제가 있어요."],
+["A","Of course. What seems to be the trouble?","그럼요. 무슨 문제인가요?"],
+["B","I ordered the steak medium rare, but this is well done. It's completely overcooked.","스테이크를 미디엄 레어로 주문했는데 이건 웰던이에요. 완전히 너무 익었어요."],
+["A","I'm so sorry about that. Let me take it back to the kitchen and have it redone right away.","정말 죄송합니다. 주방에 가져가서 바로 다시 해 오겠습니다."],
+["B","Thank you. Also, we've been waiting for our drinks for almost thirty minutes.","감사합니다. 그리고 음료도 30분 가까이 기다리고 있어요."],
+["A","I do apologize. It's unusually busy tonight, but that's no excuse. I'll bring them out right away.","정말 죄송합니다. 오늘따라 유난히 바쁘긴 하지만 변명이 될 순 없죠. 바로 가져다 드리겠습니다."],
+["B","One more thing. I think there's a mistake on the bill. We were charged for two desserts, but we didn't order any.","하나 더요. 계산서에 실수가 있는 것 같아요. 디저트 두 개가 청구됐는데 저희는 시킨 적이 없어요."],
+["A","Let me check that for you. You're right, I'm very sorry. I'll take those off the bill.","확인해 볼게요. 맞네요, 정말 죄송합니다. 그 항목은 계산서에서 빼 드릴게요."],
+["B","Thanks. To be honest, I'm a bit disappointed. We came here to celebrate my friend's birthday.","감사합니다. 솔직히 좀 실망스러워요. 친구 생일을 축하하려고 왔거든요."],
+["A","I completely understand. The drinks are on the house tonight, and I'll ask the manager to come by and apologize.","충분히 이해합니다. 오늘 음료는 서비스로 드리고, 매니저가 와서 사과드리도록 하겠습니다."],
+["B","That's very kind of you. I appreciate it.","정말 친절하시네요. 감사합니다."],
+["A","Thank you for your patience. Please enjoy the rest of your evening.","기다려 주셔서 감사합니다. 남은 저녁 시간 즐겁게 보내세요."]]},
+{id:"electronics",emo:"💻",t:"전자제품 매장",cat:"일상",lv:"중급",roles:["Salesperson","You"],k:[
+["I'm looking for a new laptop.","새 노트북을 찾고 있어요."],
+["I'd like to keep it under a thousand dollars.","1,000달러 이하로 생각하고 있어요."],
+["What's the warranty like?","보증 조건은 어떻게 되나요?"],
+["Is this model in stock?","이 모델 재고 있나요?"],
+["It's sold separately.","별도로 판매해요."],
+["Can I pay in installments?","할부로 결제할 수 있나요?"]],l:[
+["A","Hi there! Can I help you find something?","안녕하세요! 찾으시는 걸 도와드릴까요?"],
+["B","Yes, I'm looking for a new laptop, mostly for work and some light photo editing.","네, 새 노트북을 찾고 있어요. 주로 업무용이고 가벼운 사진 편집도 할 거예요."],
+["A","Great. Do you have a budget in mind?","좋아요. 생각해 두신 예산이 있나요?"],
+["B","I'd like to keep it under a thousand dollars, if possible.","가능하면 1,000달러 이하로 하고 싶어요."],
+["A","In that case, I'd recommend this one. It has a fast processor, sixteen gigs of RAM, and the battery lasts about ten hours.","그렇다면 이 제품을 추천해요. 프로세서가 빠르고 램이 16기가에, 배터리는 10시간쯤 가요."],
+["B","That sounds good. Is it lightweight? I carry it around a lot.","좋네요. 가벼운가요? 들고 다닐 일이 많아서요."],
+["A","It's just under one point three kilos, so it's very portable.","1.3킬로그램이 안 돼서 휴대하기 아주 좋아요."],
+["B","What's the warranty like?","보증 조건은 어떻게 되나요?"],
+["A","It comes with a one-year manufacturer's warranty, and you can extend it to three years for an extra hundred dollars.","제조사 1년 보증이 있고, 100달러를 더 내면 3년으로 연장할 수 있어요."],
+["B","I'll think about that. Is this model in stock in silver?","생각해 볼게요. 이 모델 실버 색상 재고 있나요?"],
+["A","Let me check. Yes, we've got one left. And it's on sale this week, so you'd save fifty dollars.","확인해 볼게요. 네, 한 대 남았어요. 게다가 이번 주 할인 중이라 50달러를 아끼실 수 있어요."],
+["B","That's a good deal. Does it come with a carrying case?","괜찮은 조건이네요. 노트북 가방도 포함인가요?"],
+["A","The charger is included, but the case is sold separately.","충전기는 포함이지만 가방은 별도 판매예요."],
+["B","Okay, I'll take it. Can I pay in installments?","알겠어요, 그걸로 할게요. 할부로 결제할 수 있나요?"],
+["A","Sure, we offer zero-interest installments for up to twelve months.","그럼요, 최대 12개월 무이자 할부가 가능해요."]]},
+{id:"bank",emo:"🏦",t:"은행",cat:"일상",lv:"중급",roles:["Teller","You"],k:[
+["I'd like to open a checking account.","입출금 계좌를 개설하고 싶어요."],
+["Do you have proof of address?","주소 증빙 서류가 있으신가요?"],
+["What's the interest rate?","이자율이 어떻게 되나요?"],
+["How much does a wire transfer cost?","해외 송금 수수료는 얼마인가요?"],
+["It takes two to three business days.","영업일 기준 2~3일 걸려요."],
+["Thanks for walking me through everything.","하나하나 설명해 주셔서 감사해요."]],l:[
+["B","Hi, I'd like to open a checking account.","안녕하세요, 입출금 계좌를 개설하고 싶어요."],
+["A","Sure. Do you have a valid ID and proof of address with you?","그럼요. 유효한 신분증과 주소 증빙 서류를 가지고 계신가요?"],
+["B","I have my passport and a utility bill. Will that do?","여권과 공과금 고지서가 있어요. 그걸로 되나요?"],
+["A","That should be fine. Let me make a copy. Would you also like a savings account?","괜찮을 거예요. 복사해 둘게요. 저축 계좌도 만드시겠어요?"],
+["B","What's the interest rate on that?","이자율이 어떻게 되나요?"],
+["A","It's currently three point five percent a year, with no monthly fee as long as you keep at least five hundred dollars in the account.","현재 연 3.5퍼센트이고, 계좌에 최소 500달러를 유지하시면 월 수수료는 없어요."],
+["B","That sounds reasonable. I'll take both. I also need to send money to my family in Korea. How much does a wire transfer cost?","괜찮네요. 둘 다 할게요. 그리고 한국에 있는 가족에게 송금해야 하는데, 해외 송금 수수료는 얼마인가요?"],
+["A","An international transfer is twenty-five dollars, and it usually takes two to three business days.","해외 송금은 25달러이고, 보통 영업일 기준 2~3일 걸려요."],
+["B","Is there a limit on how much I can send at a time?","한 번에 보낼 수 있는 금액에 한도가 있나요?"],
+["A","Up to ten thousand dollars per day online. For larger amounts, you'd need to come in and fill out a form.","온라인으로는 하루 1만 달러까지예요. 더 큰 금액은 방문해서 서류를 작성하셔야 해요."],
+["B","Got it. When will I get my debit card?","알겠어요. 체크카드는 언제 받을 수 있나요?"],
+["A","It'll be mailed to you within a week. In the meantime, you can use online banking. Here's your account number.","일주일 안에 우편으로 보내 드려요. 그동안은 온라인 뱅킹을 쓰시면 돼요. 여기 계좌번호입니다."],
+["B","Great. Thanks for walking me through everything.","좋아요. 하나하나 설명해 주셔서 감사해요."]]},
+{id:"salon",emo:"💇",t:"미용실",cat:"일상",lv:"중급",roles:["Stylist","You"],k:[
+["I booked a cut at three under Kim.","김 이름으로 3시에 커트 예약했어요."],
+["Just a trim, please.","조금만 다듬어 주세요."],
+["I'm trying to grow my hair out.","머리를 기르고 있어요."],
+["Could you make it a little cooler?","물을 조금만 더 시원하게 해 주시겠어요?"],
+["Could you give it a bit of volume?","볼륨을 좀 살려 주시겠어요?"],
+["I love it! You did a great job.","마음에 쏙 들어요! 정말 잘해 주셨어요."]],l:[
+["A","Hi! Do you have an appointment?","안녕하세요! 예약하셨나요?"],
+["B","Yes, I booked a cut at three o'clock under Kim.","네, 김 이름으로 3시에 커트 예약했어요."],
+["A","Perfect. Please have a seat. So, what are we doing today?","좋아요. 앉으세요. 오늘은 어떻게 해 드릴까요?"],
+["B","Just a trim, please. I'm trying to grow my hair out, so take off only a couple of centimeters.","조금만 다듬어 주세요. 머리를 기르는 중이라 2~3센티미터만 잘라 주세요."],
+["A","Got it. Do you want to keep the bangs?","알겠어요. 앞머리는 그대로 둘까요?"],
+["B","Yes, but could you trim them a little? I don't want them too short.","네, 그런데 조금 다듬어 주시겠어요? 너무 짧은 건 싫어요."],
+["A","Sure. I'll start with a shampoo. Is the water temperature okay?","그럼요. 먼저 샴푸할게요. 물 온도 괜찮으세요?"],
+["B","It's a bit hot. Could you make it a little cooler?","조금 뜨거워요. 조금만 더 시원하게 해 주시겠어요?"],
+["A","Of course. All right, we're done with the cut. Would you like me to blow-dry it?","물론이죠. 자, 커트는 끝났어요. 드라이해 드릴까요?"],
+["B","Yes, please. Could you give it a bit of volume?","네, 부탁드려요. 볼륨을 좀 살려 주시겠어요?"],
+["A","Here you go. How does it look?","여기 있어요. 어떠세요?"],
+["B","I love it! You did a great job.","마음에 쏙 들어요! 정말 잘해 주셨어요."],
+["A","Thank you! That'll be forty dollars.","감사합니다! 40달러입니다."],
+["B","Here you go. Is the tip included?","여기요. 팁은 포함인가요?"]]},
+{id:"repair",emo:"🔧",t:"수리·AS",cat:"일상",lv:"중급",roles:["Technician","You"],k:[
+["My screen cracked when I dropped it.","떨어뜨려서 화면에 금이 갔어요."],
+["It sometimes acts up.","가끔 오작동해요."],
+["Is it still under warranty?","아직 보증 기간인가요?"],
+["The warranty doesn't cover accidental damage.","보증은 우발적 파손은 보장하지 않아요."],
+["Could you give me a written estimate?","서면 견적서를 받을 수 있을까요?"],
+["All repairs come with a ninety-day guarantee.","모든 수리에 90일 보증이 붙어요."]],l:[
+["B","Hi, my phone screen cracked when I dropped it, and I'd like to get it fixed.","안녕하세요, 폰을 떨어뜨려서 화면에 금이 갔는데 수리하고 싶어요."],
+["A","Let me take a look. Yeah, that's quite a crack. Does the touch screen still work okay?","한번 볼게요. 음, 금이 꽤 크게 갔네요. 터치는 아직 잘 되나요?"],
+["B","It works, but it sometimes acts up. And the battery drains really fast, too.","되긴 하는데 가끔 오작동해요. 그리고 배터리도 엄청 빨리 닳아요."],
+["A","We can replace both the screen and the battery. The screen is one hundred and twenty dollars, and the battery is fifty.","화면과 배터리를 둘 다 교체해 드릴 수 있어요. 화면은 120달러, 배터리는 50달러예요."],
+["B","Is it still under warranty? I bought it about eight months ago.","아직 보증 기간인가요? 산 지 8개월쯤 됐어요."],
+["A","The warranty doesn't cover accidental damage, I'm afraid. But the battery problem is covered, so that's free.","죄송하지만 보증은 우발적 파손은 보장하지 않아요. 하지만 배터리 문제는 보장되니까 무료예요."],
+["B","Oh, good. How long will the repair take?","아, 다행이네요. 수리는 얼마나 걸리나요?"],
+["A","It should be ready in about two hours if we have the parts in stock.","부품 재고가 있으면 2시간쯤이면 됩니다."],
+["B","Will I lose my data?","데이터가 지워지나요?"],
+["A","No, but I'd back up your phone just in case.","아니요, 그래도 혹시 모르니 백업해 두시는 게 좋아요."],
+["B","Good idea. Could you give me a written estimate?","좋은 생각이에요. 서면 견적서를 받을 수 있을까요?"],
+["A","Sure. Just fill out this form, and we'll text you when it's ready.","그럼요. 이 양식을 작성해 주시면 다 되는 대로 문자 드릴게요."],
+["B","Thanks. Do you offer any guarantee on the repair?","감사합니다. 수리에 대한 보증도 있나요?"],
+["A","Yes, all repairs come with a ninety-day guarantee.","네, 모든 수리에는 90일 보증이 붙어요."]]},
+{id:"gym",emo:"🏋️",t:"운동·헬스장",cat:"일상",lv:"중급",roles:["Staff","You"],k:[
+["Could you tell me about your membership options?","회원권 종류를 알려 주시겠어요?"],
+["Is there a free trial?","무료 체험이 있나요?"],
+["I'm a bit out of shape.","제가 몸 상태가 좀 안 좋아요(운동 부족이에요)."],
+["I'd like to take it slow.","천천히 하고 싶어요."],
+["I want to lose weight and build some muscle.","살을 빼고 근육도 좀 만들고 싶어요."],
+["Do you have group classes?","그룹 수업이 있나요?"]],l:[
+["B","Hi, I'm interested in joining the gym. Could you tell me about your membership options?","안녕하세요, 헬스장에 등록하고 싶은데요. 회원권 종류를 알려 주시겠어요?"],
+["A","Of course! We have monthly and yearly plans. The monthly plan is fifty dollars, and the yearly plan is four hundred and eighty.","물론이죠! 월 회원권과 연 회원권이 있어요. 월 회원권은 50달러, 연 회원권은 480달러예요."],
+["B","Is there a free trial? I'd like to try it out first.","무료 체험이 있나요? 먼저 이용해 보고 싶어서요."],
+["A","Yes, you can come in for a free three-day trial.","네, 3일 무료 체험을 해 보실 수 있어요."],
+["B","Great. I'm a beginner, so could I get some advice on where to start?","좋아요. 제가 초보라서 어디서부터 시작하면 좋을지 조언을 받을 수 있을까요?"],
+["A","Sure. I'd suggest starting with three days a week, forty-five minutes each. Do you have any particular goals?","그럼요. 일주일에 3일, 한 번에 45분으로 시작하시길 권해요. 특별한 목표가 있으세요?"],
+["B","I want to lose weight and build some muscle.","살을 빼고 근육도 좀 만들고 싶어요."],
+["A","Then a mix of cardio and strength training would work well. Have you done weight training before?","그럼 유산소와 근력 운동을 섞는 게 좋겠어요. 전에 웨이트 트레이닝을 해 보셨나요?"],
+["B","Not really. I'm a bit out of shape, so I'd like to take it slow.","별로요. 운동 부족이라 천천히 하고 싶어요."],
+["A","That's totally fine. We offer a free session with a personal trainer to show you how to use the machines.","괜찮아요. 기구 사용법을 알려 드리는 퍼스널 트레이너 무료 세션이 있어요."],
+["B","That sounds great. Do you have group classes like yoga or spinning?","좋네요. 요가나 스피닝 같은 그룹 수업도 있나요?"],
+["A","Yes, there's a yoga class every morning at seven, and spinning on Tuesday and Thursday evenings.","네, 매일 아침 7시에 요가 수업이 있고, 화요일과 목요일 저녁에 스피닝이 있어요."],
+["B","Perfect. Where can I find the locker rooms?","좋아요. 라커룸은 어디에 있나요?"],
+["A","Down the hall, on your right. Towels are free.","복도 끝 오른쪽이에요. 수건은 무료입니다."]]},
+{id:"phonebooking",emo:"📞",t:"전화 예약",cat:"일상",lv:"중급",roles:["Receptionist","You"],k:[
+["I'd like to make a reservation.","예약을 하고 싶어요."],
+["A party of six.","여섯 명이에요."],
+["Is seven o'clock available?","7시에 자리가 있나요?"],
+["I'm afraid we're fully booked.","죄송하지만 예약이 다 찼어요."],
+["Could you repeat that, please?","다시 한번 말씀해 주시겠어요?"],
+["Is it under the name Kim?","김 이름으로 예약된 건가요?"]],l:[
+["A","Thank you for calling Olive Bistro. How can I help you?","올리브 비스트로에 전화 주셔서 감사합니다. 무엇을 도와드릴까요?"],
+["B","Hi, I'd like to make a reservation for this Saturday evening.","안녕하세요, 이번 토요일 저녁으로 예약하고 싶어요."],
+["A","Certainly. For how many people?","그럼요. 몇 분이세요?"],
+["B","A party of six. Is seven o'clock available?","여섯 명이에요. 7시에 자리가 있나요?"],
+["A","Let me check. I'm afraid seven is fully booked. We have a table at six thirty or at eight fifteen.","확인해 볼게요. 죄송하지만 7시는 예약이 다 찼어요. 6시 30분이나 8시 15분에 자리가 있어요."],
+["B","Eight fifteen works for us. Could we have a table by the window, if possible?","8시 15분이 좋아요. 가능하면 창가 자리로 부탁드려도 될까요?"],
+["A","I can't guarantee it, but I'll make a note of your request. May I have your name and phone number?","보장해 드릴 순 없지만 요청 사항을 적어 둘게요. 성함과 전화번호를 알려 주시겠어요?"],
+["B","It's Kim, K-I-M. My number is five five five, oh one three four.","김입니다, K-I-M이에요. 전화번호는 555-0134예요."],
+["A","Thank you, Ms. Kim. Is it a special occasion?","감사합니다, 김 님. 특별한 날인가요?"],
+["B","Yes, it's my mother's sixtieth birthday. Could you prepare a small cake?","네, 어머니 환갑이에요. 작은 케이크를 준비해 주실 수 있나요?"],
+["A","We'd be happy to. Cakes have to be ordered a day ahead, so I'll add it for you now.","기꺼이요. 케이크는 하루 전에 주문해야 해서 지금 추가해 드릴게요."],
+["B","Wonderful. Also, one of our guests is allergic to shellfish. Will that be a problem?","좋네요. 그리고 일행 중 한 분이 갑각류 알레르기가 있는데 괜찮을까요?"],
+["A","Not at all. Just let your server know when you arrive.","전혀 문제없어요. 도착하시면 서버에게 말씀해 주세요."],
+["B","Great. Could you repeat the reservation details to make sure it's right?","좋아요. 맞는지 확인하게 예약 내용을 다시 한번 말씀해 주시겠어요?"],
+["A","Sure. Saturday at eight fifteen, a party of six, under Kim, with a cake. We'll see you then!","그럼요. 토요일 8시 15분, 여섯 분, 김 님 성함으로 케이크 포함입니다. 그때 뵙겠습니다!"]]},
+{id:"housing",emo:"🏠",t:"집 구하기",cat:"일상",lv:"고급",roles:["Agent","You"],k:[
+["Is the place still available?","그 집 아직 나와 있나요?"],
+["Utilities are not included.","공과금은 포함되어 있지 않아요."],
+["What's the lease term?","계약 기간이 어떻게 되나요?"],
+["We require a security deposit.","보증금이 필요해요."],
+["Is it pet-friendly?","반려동물이 가능한가요?"],
+["Could I schedule a viewing?","집을 보러 가는 일정을 잡을 수 있을까요?"]],l:[
+["B","Hi, I'm looking for a one-bedroom apartment near downtown. Is the place on Maple Street still available?","안녕하세요, 시내 근처에 방 하나짜리 아파트를 찾고 있어요. 메이플 가에 있는 집은 아직 나와 있나요?"],
+["A","Yes, it is. It's fourteen hundred a month, and utilities are not included.","네, 있어요. 월세는 1,400달러이고 공과금은 포함이 아니에요."],
+["B","What would the utilities come to, roughly?","공과금은 대략 얼마쯤 나올까요?"],
+["A","About a hundred and fifty a month for electricity, water, and internet combined.","전기, 수도, 인터넷을 합쳐서 한 달에 150달러쯤이에요."],
+["B","Is the apartment furnished?","가구가 갖춰져 있나요?"],
+["A","It comes with a fridge, a washer, and a dryer, but no furniture.","냉장고와 세탁기, 건조기는 있는데 가구는 없어요."],
+["B","And what's the lease term?","계약 기간은 어떻게 되나요?"],
+["A","It's a twelve-month lease, and we require a security deposit equal to one month's rent.","12개월 계약이고, 월세 한 달 치에 해당하는 보증금이 필요해요."],
+["B","Is it pet-friendly? I have a small dog.","반려동물이 가능한가요? 작은 강아지가 있어서요."],
+["A","Pets are allowed, but there's an additional deposit of three hundred dollars.","반려동물은 허용되지만 추가 보증금이 300달러 있어요."],
+["B","Got it. How far is it from the nearest subway station?","알겠어요. 가장 가까운 지하철역에서 얼마나 먼가요?"],
+["A","It's just a five-minute walk. It's a great location, so it'll go fast.","걸어서 5분이에요. 위치가 좋아서 금방 나갈 거예요."],
+["B","In that case, could I schedule a viewing for tomorrow evening?","그렇다면 내일 저녁에 집을 볼 수 있을까요?"],
+["A","Sure, how does six o'clock sound? I'll show you around then.","그럼요, 6시 어떠세요? 그때 집을 안내해 드릴게요."]]},
+{id:"coworker",emo:"☕",t:"회사 동료 잡담",cat:"비즈니스",lv:"중급",roles:["Coworker","You"],k:[
+["How was your weekend?","주말 어떻게 보냈어요?"],
+["I've been meaning to get out of the city more.","도시 밖으로 좀 더 나가 봐야겠다고 계속 생각해 왔어요."],
+["I'm swamped today.","오늘 일에 파묻혀 있어요."],
+["Let me take a rain check.","다음으로 미룰게요."],
+["I've got it under control.","제가 알아서 잘 처리하고 있어요."],
+["No rush.","서두를 것 없어요."]],l:[
+["A","Hey, how was your weekend?","안녕하세요, 주말 어떻게 보냈어요?"],
+["B","It was pretty relaxing. I just stayed home and caught up on some sleep. How about you?","꽤 여유로웠어요. 집에서 쉬면서 밀린 잠을 잤어요. 당신은요?"],
+["A","I went hiking with my family. We lucked out with the weather.","가족이랑 등산 갔어요. 날씨가 정말 운 좋게 좋았어요."],
+["B","That sounds nice. I've been meaning to get out of the city more.","좋았겠네요. 도시 밖으로 좀 더 나가 봐야겠다고 계속 생각해 왔어요."],
+["A","You should! By the way, did you hear that Mark is leaving the company?","그래야죠! 그런데 마크가 회사 그만두는 거 들었어요?"],
+["B","Really? I had no idea. Where's he going?","정말요? 전혀 몰랐어요. 어디로 가는데요?"],
+["A","He got a job offer from a competitor. Apparently, they offered him a much better salary.","경쟁사에서 입사 제안을 받았대요. 연봉을 훨씬 더 많이 준다고 했나 봐요."],
+["B","Good for him. We'll miss him, though.","잘됐네요. 그래도 그리울 거예요."],
+["A","Totally. Anyway, are you free for lunch? There's a new ramen place around the corner.","그러게요. 그건 그렇고, 점심 같이 할래요? 모퉁이에 새 라멘집이 생겼어요."],
+["B","I'd love to, but I'm swamped today. I have a report due by three.","그러고 싶은데 오늘은 일에 파묻혀 있어요. 3시까지 내야 하는 보고서가 있거든요."],
+["A","No rush. Do you need a hand with it?","서두를 것 없어요. 도와줄까요?"],
+["B","Thanks for offering, but I've got it under control. Let me take a rain check on lunch, though.","제안은 고맙지만 제가 알아서 하고 있어요. 점심은 다음으로 미룰게요."],
+["A","You got it. Good luck with the report!","알겠어요. 보고서 잘 마무리해요!"],
+["B","Thanks. Talk to you later!","고마워요. 나중에 얘기해요!"]]},
+{id:"interview",emo:"💼",t:"취업 면접",cat:"비즈니스",lv:"고급",roles:["Interviewer","You"],k:[
+["Thank you for having me.","불러 주셔서 감사합니다."],
+["This role is a perfect fit for my skills.","이 직무는 제 역량과 딱 맞습니다."],
+["I'm eager to take on more responsibility.","더 많은 책임을 맡고 싶습니다."],
+["I'm very detail-oriented.","저는 세부 사항을 꼼꼼히 챙기는 편입니다."],
+["I work well under pressure.","저는 압박 속에서도 일을 잘합니다."],
+["What are the next steps in the process?","다음 전형 절차는 어떻게 되나요?"]],l:[
+["A","Thanks for coming in today. Please, have a seat. Tell me a little about yourself.","오늘 와 주셔서 감사합니다. 앉으세요. 간단히 자기소개를 해 주시겠어요?"],
+["B","Thank you for having me. I have five years of experience in marketing, most recently at a tech startup, where I led our social media campaigns.","불러 주셔서 감사합니다. 저는 마케팅 분야에서 5년간 일했고, 가장 최근에는 IT 스타트업에서 소셜 미디어 캠페인을 이끌었습니다."],
+["A","What made you apply for this position?","이 자리에 지원하신 이유가 무엇인가요?"],
+["B","I've always admired your brand, and this role is a perfect fit for my skills. I'm also eager to take on more responsibility.","저는 귀사의 브랜드를 늘 동경해 왔고, 이 직무는 제 역량과 딱 맞습니다. 또한 더 많은 책임을 맡고 싶습니다."],
+["A","Can you tell me about a challenge you faced at work and how you handled it?","업무에서 어려움을 겪었던 경험과 그것을 어떻게 해결했는지 말씀해 주시겠어요?"],
+["B","Sure. Last year, our budget was cut by thirty percent right before a big launch. I prioritized the most effective channels, and we ended up exceeding our target by ten percent.","네. 작년에 대규모 출시를 앞두고 예산이 30퍼센트 삭감됐습니다. 가장 효과적인 채널에 우선순위를 두었고, 결국 목표를 10퍼센트 초과 달성했습니다."],
+["A","Impressive. What would you say is your greatest strength?","인상적이네요. 본인의 가장 큰 강점은 무엇이라고 생각하세요?"],
+["B","I'd say I'm very detail-oriented, and I work well under pressure.","저는 세부 사항을 꼼꼼히 챙기고, 압박 속에서도 일을 잘한다고 생각합니다."],
+["A","And what about a weakness?","그럼 약점은요?"],
+["B","I used to take on too much myself, but I've learned to delegate and trust my team.","예전에는 모든 일을 혼자 떠안는 편이었는데, 이제는 업무를 위임하고 팀을 믿는 법을 배웠습니다."],
+["A","Where do you see yourself in five years?","5년 뒤에 어떤 모습일 것 같나요?"],
+["B","Ideally, in a leadership role, helping to shape the team's strategy.","이상적으로는 리더 역할을 맡아 팀의 전략을 만드는 데 기여하고 있길 바랍니다."],
+["A","Do you have any questions for us?","저희에게 질문 있으신가요?"],
+["B","Yes. What does a typical day look like in this role, and what are the next steps in the process?","네. 이 직무의 일반적인 하루는 어떤 모습인지, 그리고 다음 전형 절차는 어떻게 되는지 궁금합니다."]]},
+{id:"meeting",emo:"📊",t:"비즈니스 미팅",cat:"비즈니스",lv:"고급",roles:["Client","You"],k:[
+["Shall we kick things off?","시작해 볼까요?"],
+["Let me run through the agenda.","안건을 쭉 짚어 보겠습니다."],
+["We're on track to finish by the end of the month.","이달 말까지 끝내는 데 차질이 없습니다."],
+["We've run into a few delays.","몇 가지 지연이 생겼어요."],
+["Let me run it by my manager.","제 상사와 상의해 볼게요."],
+["Let's touch base next week.","다음 주에 다시 연락해서 진행 상황을 확인해요."]],l:[
+["A","Thanks, everyone, for joining. Shall we kick things off?","모두 참석해 주셔서 감사합니다. 시작해 볼까요?"],
+["B","Sure. Let me quickly run through the agenda: the project timeline, the budget, and next steps.","네. 안건을 간단히 짚어 보겠습니다. 프로젝트 일정, 예산, 그리고 다음 단계입니다."],
+["A","Sounds good. Where do we stand on the timeline?","좋아요. 일정은 지금 어느 단계인가요?"],
+["B","We're on track to finish the first phase by the end of the month, though we've run into a few delays with design.","이달 말까지 1단계를 끝내는 데 차질은 없지만, 디자인 쪽에서 몇 가지 지연이 생겼어요."],
+["A","Do you think we can still make the deadline?","그래도 마감일을 맞출 수 있을 것 같나요?"],
+["B","I'm fairly confident, but we might need a bit more support from your side.","꽤 자신 있지만, 그쪽에서 좀 더 지원해 주셔야 할 수도 있어요."],
+["A","What kind of support are you thinking of?","어떤 지원을 생각하고 계세요?"],
+["B","Two more developers for two weeks, which would add about ten percent to the budget.","개발자 두 명이 2주간 더 필요하고, 그러면 예산이 10퍼센트쯤 늘어납니다."],
+["A","That's a significant increase. Let me run it by my manager and get back to you by Friday.","상당한 증액이네요. 제 상사와 상의해 보고 금요일까지 답을 드릴게요."],
+["B","That works. I'll send you a breakdown of the costs so you have something to work with.","좋아요. 참고하실 수 있도록 비용 내역을 보내 드릴게요."],
+["A","Great. Is there anything else we need to cover?","좋습니다. 더 다룰 내용이 있을까요?"],
+["B","Just one thing. Could we move our weekly check-in to Tuesdays?","한 가지만요. 주간 점검 회의를 화요일로 옮길 수 있을까요?"],
+["A","Tuesday works for me. Let's wrap up here. I'll send out the minutes after the meeting.","화요일 좋아요. 여기서 마무리하죠. 회의록은 회의 후에 보내 드릴게요."],
+["B","Thanks, everyone. Let's touch base next week.","모두 감사합니다. 다음 주에 다시 점검하죠."]]},
+{id:"deadline",emo:"⏰",t:"마감 조정·업무 협의",cat:"비즈니스",lv:"고급",roles:["Manager","You"],k:[
+["I'm running behind schedule.","일정이 늦어지고 있어요."],
+["I don't think I can finish it by Friday.","금요일까지는 끝내기 어려울 것 같아요."],
+["Could I have until Tuesday noon?","화요일 정오까지 시간을 더 받을 수 있을까요?"],
+["Is there anything I can do to speed things up?","속도를 내기 위해 제가 도울 일이 있을까요?"],
+["Keep me posted.","계속 진행 상황을 알려 줘요."],
+["Flag any issues early.","문제는 일찍 알려 줘요."]],l:[
+["B","Do you have a minute? I wanted to talk about the Henderson report.","잠깐 시간 괜찮으세요? 헨더슨 보고서에 대해 말씀드리고 싶어서요."],
+["A","Sure. What's up?","그럼요. 무슨 일이에요?"],
+["B","I'm afraid I'm running behind schedule. I don't think I can finish it by Friday.","죄송하지만 일정이 늦어지고 있어요. 금요일까지는 끝내기 어려울 것 같아요."],
+["A","Hmm, that's a problem. The client is expecting it by the end of the week.","음, 그건 문제네요. 고객이 이번 주말까지 받기를 기대하고 있어요."],
+["B","I know, and I'm sorry. The data from the finance team only came in yesterday, so I had to redo part of the analysis.","알고 있고, 죄송합니다. 재무팀 데이터가 어제야 들어와서 분석 일부를 다시 해야 했어요."],
+["A","I see. How much more time do you need?","그렇군요. 시간이 얼마나 더 필요해요?"],
+["B","If I could have until Tuesday noon, I'm confident I can deliver a thorough report.","화요일 정오까지 주시면 충실한 보고서를 낼 자신이 있어요."],
+["A","Is there anything I can do to help speed things up?","속도를 내는 데 내가 도울 일이 있을까요?"],
+["B","Actually, it would help if someone could put together the slides.","사실 누군가 슬라이드를 맡아 주면 큰 도움이 될 거예요."],
+["A","I'll ask Jenny to help with that. In the meantime, I'll let the client know about the short delay.","제니에게 도와 달라고 할게요. 그동안 나는 고객에게 약간 지연된다고 알려 둘게요."],
+["B","Thank you. I really appreciate it. I'll make sure it doesn't happen again.","감사합니다. 정말 고맙습니다. 다시는 이런 일이 없도록 하겠습니다."],
+["A","Just keep me posted on your progress. And next time, flag any issues early so we can avoid last-minute surprises.","진행 상황만 계속 알려 줘요. 그리고 다음에는 문제를 일찍 알려 줘서 막판에 놀라는 일이 없게 해요."],
+["B","Absolutely. I'll send you an update by the end of the day tomorrow.","물론이죠. 내일 퇴근 전까지 진행 상황을 보내 드리겠습니다."]]},
+{id:"intro",emo:"🙋",t:"자기소개",cat:"사교",lv:"초급",roles:["Friend","You"],k:[
+["Nice to meet you.","만나서 반가워요."],
+["Where are you from?","어디 출신이에요?"],
+["What do you do?","무슨 일 하세요?"],
+["How long have you been doing that?","그 일은 얼마나 하셨어요?"],
+["I'm still getting used to it.","아직 적응하는 중이에요."],
+["We should grab a coffee sometime.","언제 커피 한잔해요."]],l:[
+["A","Hi, I don't think we've met. I'm Alex.","안녕하세요, 처음 뵙는 것 같네요. 저는 알렉스예요.",0],
+["B","Nice to meet you. My name is Minji.","만나서 반가워요. 제 이름은 민지예요.",1],
+["A","Where are you from?","어디 출신이에요?",2],
+["B","I am from Seoul, Korea.","한국 서울에서 왔어요.",3],
+["A","What do you do?","무슨 일 하세요?",4],
+["B","I work as a designer.","디자이너로 일해요.",5],
+["A","That's cool. How long have you been doing that?","멋지네요. 그 일은 얼마나 하셨어요?"],
+["B","About four years. I mostly design mobile apps. What about you?","4년쯤요. 주로 모바일 앱을 디자인해요. 당신은요?"],
+["A","I'm a software engineer. I moved here from Chicago a few months ago.","저는 소프트웨어 엔지니어예요. 몇 달 전에 시카고에서 이사 왔어요."],
+["B","Oh, how do you like it so far?","아, 지금까지 어때요?"],
+["A","I love it, but I'm still getting used to the weather. What do you like to do in your free time?","좋아요, 근데 날씨에는 아직 적응하는 중이에요. 여가 시간에 뭐 하는 걸 좋아해요?"],
+["B","I like watching movies and traveling.","영화 보기와 여행을 좋아해요.",7],
+["A","Me too! We should grab a coffee sometime and swap travel stories.","저도요! 언제 커피 한잔하면서 여행 이야기 나눠요."],
+["B","I'd love that. Let's exchange numbers.","좋아요. 번호 교환해요."]]},
+{id:"weather",emo:"🌤️",t:"날씨 이야기",cat:"사교",lv:"초급",roles:["Colleague","You"],k:[
+["Gorgeous day, isn't it?","날씨 정말 좋죠?"],
+["Tell me about it.","내 말이 그 말이에요. (정말 그래요)"],
+["It's supposed to get chilly tonight.","오늘 밤엔 쌀쌀해진다고 해요."],
+["It's going to be warm and sunny.","따뜻하고 화창할 거예요."],
+["I'm not a fan of winter.","저는 겨울을 별로 안 좋아해요."],
+["I hope the weather holds up.","날씨가 계속 좋았으면 좋겠어요."]],l:[
+["A","Gorgeous day, isn't it?","날씨 정말 좋죠?"],
+["B","It sure is. After all that rain last week, it's nice to see the sun again.","정말 그래요. 지난주에 비가 그렇게 왔는데 해를 다시 보니 좋네요."],
+["A","Tell me about it. I was getting tired of carrying an umbrella everywhere.","내 말이요. 어딜 가나 우산 들고 다니는 게 지겨워지던 참이었어요."],
+["B","Me too. Did you see the forecast for the weekend?","저도요. 주말 일기예보 봤어요?"],
+["A","I did. They say it's going to be warm and sunny, with a high of twenty-five degrees.","봤어요. 따뜻하고 화창하고 최고 기온이 25도라고 해요."],
+["B","Perfect weather for a picnic. Are you planning anything?","소풍 가기 딱 좋은 날씨네요. 계획 있어요?"],
+["A","Not yet. I was thinking about going to the beach, but it might be crowded.","아직요. 바닷가에 갈까 생각했는데 붐빌 수도 있겠어요."],
+["B","True. It's supposed to get chilly in the evening, though, so bring a jacket.","맞아요. 그래도 저녁에는 쌀쌀해진다고 하니 재킷을 챙기세요."],
+["A","Good point. Back home, it's freezing right now. They've already had snow.","좋은 지적이에요. 제 고향은 지금 엄청 추워요. 벌써 눈도 왔대요."],
+["B","Already? I'm not a fan of winter. I hate the cold.","벌써요? 저는 겨울이 별로예요. 추운 게 싫어요."],
+["A","I don't mind it, but the dry air gets to me. My skin gets so dry.","저는 괜찮은데 건조한 공기가 힘들어요. 피부가 너무 건조해져요."],
+["B","Same here. Anyway, enjoy your weekend, and I hope the weather holds up!","저도요. 아무튼 주말 잘 보내세요, 날씨가 계속 좋았으면 좋겠네요!"]]},
+{id:"smalltalk",emo:"👋",t:"이웃과 스몰톡",cat:"사교",lv:"중급",roles:["Neighbor","You"],k:[
+["Are you new to the neighborhood?","이 동네에 새로 오셨어요?"],
+["How are you settling in?","적응은 잘 되고 있어요?"],
+["We're getting there.","차츰 나아지고 있어요."],
+["Good to know.","알아 두면 좋겠네요."],
+["What can I bring?","제가 뭘 가져갈까요?"],
+["See you around!","또 봐요!"]],l:[
+["A","Hi! Are you new to the neighborhood?","안녕하세요! 이 동네에 새로 오셨어요?"],
+["B","Yes, we just moved in last week. I'm in 304.","네, 지난주에 막 이사 왔어요. 304호예요."],
+["A","Welcome! I'm Sarah from 302. How are you settling in?","환영해요! 저는 302호 사라예요. 적응은 잘 되고 있어요?"],
+["B","Pretty well, thanks. There are still boxes everywhere, but we're getting there.","꽤 잘요, 고마워요. 아직 상자가 여기저기 있지만 차츰 정리되고 있어요."],
+["A","I know the feeling. Do you need any recommendations? Like a good grocery store or a dentist?","그 기분 알아요. 추천이 필요하세요? 좋은 마트나 치과 같은 거요."],
+["B","Actually, yes! Is there a decent grocery store nearby?","사실 네! 근처에 괜찮은 마트가 있나요?"],
+["A","There's a great one two blocks down, and the bakery next to it is amazing.","두 블록 아래에 아주 좋은 데가 있고, 그 옆 빵집도 끝내줘요."],
+["B","Good to know. I'm a bit of a foodie, so I'll definitely check it out.","알아 두면 좋겠네요. 제가 맛집 찾아다니는 걸 좋아해서 꼭 가 볼게요."],
+["A","Then you're in luck. There's a farmers market every Saturday, too.","그럼 운이 좋네요. 매주 토요일에는 파머스 마켓도 열려요."],
+["B","That sounds fun. I'll go this weekend.","재밌겠네요. 이번 주말에 가 볼게요."],
+["A","By the way, there's a barbecue on the roof this Friday. You should come!","참, 이번 금요일에 옥상에서 바비큐 파티를 해요. 꼭 오세요!"],
+["B","I'd love to. What can I bring?","좋아요. 제가 뭘 가져갈까요?"],
+["A","Just yourself! But a drink is always welcome.","몸만 오세요! 그래도 마실 거 하나 가져오면 언제나 환영이죠."],
+["B","Perfect. It was so nice talking to you.","좋아요. 이야기 나눠서 정말 즐거웠어요."],
+["A","Likewise. See you around!","저도요. 또 봐요!"]]},
+{id:"hobby",emo:"🎨",t:"취미 이야기",cat:"사교",lv:"중급",roles:["Friend","You"],k:[
+["What do you do for fun?","재미로 뭐 하세요?"],
+["I've gotten really into baking lately.","요즘 베이킹에 푹 빠졌어요."],
+["I'm a big fan of hiking.","저는 등산을 아주 좋아해요."],
+["I'm not much of a morning person.","저는 아침형 인간은 아니에요."],
+["I've been hooked ever since.","그 뒤로 계속 푹 빠져 있어요."],
+["Practice makes perfect.","연습하면 완벽해져요."]],l:[
+["A","So, what do you do for fun?","그럼 재미로 뭐 하세요?"],
+["B","I've gotten really into baking lately. How about you?","요즘 베이킹에 푹 빠졌어요. 당신은요?"],
+["A","I'm a big fan of hiking. I try to get out almost every weekend.","저는 등산을 아주 좋아해요. 거의 주말마다 나가려고 해요."],
+["B","Wow, that's great. Do you have a favorite trail?","와, 멋지네요. 제일 좋아하는 코스가 있어요?"],
+["A","Yes, there's a trail near my house with an amazing sunrise view. It's worth waking up early.","네, 우리 집 근처에 일출이 끝내주는 코스가 있어요. 일찍 일어날 만한 가치가 있죠."],
+["B","I'm not much of a morning person, so I'd probably sleep through it.","저는 아침형 인간이 아니라서 아마 자느라 놓칠 거예요."],
+["A","Ha! Fair enough. What do you like to bake?","하하! 그럴 만하죠. 뭘 구워요?"],
+["B","Mostly bread and cookies. I took a sourdough class last month, and I've been hooked ever since.","주로 빵이랑 쿠키요. 지난달에 사워도우 수업을 들었는데 그 뒤로 푹 빠졌어요."],
+["A","That sounds delicious. Was it hard to learn?","맛있겠네요. 배우기 어려웠어요?"],
+["B","It was tricky at first, but practice makes perfect. My first loaf was like a brick.","처음엔 까다로웠는데 연습하면 늘더라고요. 첫 번째 빵은 벽돌처럼 딱딱했어요."],
+["A","Ha ha! I'd love to try your bread sometime.","하하! 언제 한번 당신 빵을 먹어 보고 싶네요."],
+["B","Sure, I'll bring you some. Maybe we can trade: I bake, and you take me hiking.","그럼요, 가져다 드릴게요. 우리 서로 바꿔요. 제가 빵을 굽고, 당신이 저를 등산에 데려가는 거예요."],
+["A","Deal! I'll show you an easy trail to start with.","좋아요! 처음엔 쉬운 코스부터 알려 줄게요."]]},
+{id:"plans",emo:"📅",t:"약속 잡기",cat:"사교",lv:"중급",roles:["Friend","You"],k:[
+["Are you free this weekend?","이번 주말에 시간 돼요?"],
+["I'm up for anything.","저는 뭐든 좋아요."],
+["What time should we meet?","몇 시에 만날까요?"],
+["The more the merrier!","사람이 많을수록 좋죠!"],
+["Let me know if anything comes up.","무슨 일이 생기면 알려 줘요."],
+["Sounds like a plan!","좋아요, 그렇게 해요!"]],l:[
+["A","Hey! Are you free this weekend? I was thinking we could catch up.","안녕! 이번 주말에 시간 돼? 만나서 밀린 얘기 좀 하면 좋겠다 싶었어."],
+["B","I'd love to. Let me check my schedule. I'm free on Saturday afternoon, but I have plans on Sunday.","좋아. 일정 확인해 볼게. 토요일 오후는 괜찮은데 일요일은 약속이 있어."],
+["A","Saturday works. What do you feel like doing?","토요일 좋아. 뭐 하고 싶어?"],
+["B","I'm up for anything. How about brunch, and then maybe a walk in the park?","난 뭐든 좋아. 브런치 먹고 공원 산책 어때?"],
+["A","Sounds great. There's a new brunch place near the station.","좋아. 역 근처에 새로 생긴 브런치 가게가 있어."],
+["B","Perfect. What time should we meet?","좋아. 몇 시에 만날까?"],
+["A","How about eleven? That way we can beat the lunch rush.","11시 어때? 그러면 점심 붐비기 전에 갈 수 있어."],
+["B","Eleven is a bit early for me. Would noon be okay?","11시는 나한테 좀 일러. 정오는 어때?"],
+["A","Noon works. Let's meet in front of the station.","정오 좋아. 역 앞에서 만나자."],
+["B","Great. Oh, can I bring a friend along? She's visiting from Busan.","좋아. 아, 친구 한 명 데려가도 돼? 부산에서 놀러 왔어."],
+["A","Of course, the more the merrier!","물론이지, 많을수록 좋지!"],
+["B","Thanks. Let me know if anything comes up and you need to reschedule.","고마워. 무슨 일이 생겨서 일정을 바꿔야 하면 알려 줘."],
+["A","Same here. I'll text you on Friday to confirm.","나도. 금요일에 문자로 확인할게."],
+["B","Sounds like a plan. Can't wait!","좋아, 그렇게 하자. 너무 기대돼!"]]},
+{id:"sorrythanks",emo:"🙏",t:"사과와 감사",cat:"사교",lv:"중급",roles:["Friend","You"],k:[
+["I'm so sorry I'm late.","늦어서 정말 미안해요."],
+["It's no big deal.","별일 아니에요."],
+["I couldn't have done it without you.","당신 없이는 못 했을 거예요."],
+["I owe you one.","신세 한 번 졌네요."],
+["It's the least I can do.","이 정도는 당연히 해야죠."],
+["I'll make it up to you.","이 보답은 꼭 할게요."]],l:[
+["B","Hey, I'm so sorry I'm late. The traffic was terrible.","안녕, 늦어서 정말 미안해. 차가 너무 막혔어."],
+["A","Don't worry about it. I just got here myself.","신경 쓰지 마. 나도 방금 왔어."],
+["B","Thanks for being so understanding. I should have left earlier.","이해해 줘서 고마워. 더 일찍 출발했어야 했는데."],
+["A","Honestly, it's no big deal. By the way, thank you again for helping me move last weekend. I couldn't have done it without you.","정말 별일 아니야. 그건 그렇고, 지난 주말에 이사 도와줘서 다시 한번 고마워. 너 없이는 못 했을 거야."],
+["B","Oh, it was my pleasure. Anytime!","아, 나도 좋았어. 언제든지!"],
+["A","I owe you one. Let me treat you to lunch today.","신세 한 번 졌네. 오늘 점심은 내가 살게."],
+["B","You don't have to do that.","안 그래도 돼."],
+["A","I insist. It's the least I can do.","꼭 사고 싶어. 이 정도는 해야지."],
+["B","Well, if you insist. Thank you, that's really kind of you.","그럼 그렇게 할게. 고마워, 정말 친절하다."],
+["A","Oh, and I'm sorry I forgot your birthday last month. It completely slipped my mind.","아, 그리고 지난달에 네 생일을 잊어버려서 미안해. 완전히 깜빡했어."],
+["B","That's okay. Don't beat yourself up over it.","괜찮아. 너무 자책하지 마."],
+["A","Thanks. I'll make it up to you, I promise.","고마워. 꼭 만회할게, 약속해."]]},
+{id:"movietravel",emo:"🎬",t:"영화·여행 이야기",cat:"사교",lv:"중급",roles:["Friend","You"],k:[
+["It really blew me away.","정말 깜짝 놀랄 만큼 대단했어요."],
+["I won't spoil it.","내용은 말하지 않을게요(스포 안 할게요)."],
+["It's worth watching in a theater.","극장에서 볼 만한 가치가 있어요."],
+["I'm torn between Japan and Spain.","일본과 스페인 사이에서 고민 중이에요."],
+["You can't go wrong.","어느 쪽을 골라도 후회 없을 거예요."],
+["You only live once!","인생은 한 번뿐이잖아요!"]],l:[
+["A","Have you seen any good movies lately?","요즘 재밌는 영화 본 거 있어?"],
+["B","Yes! I watched an amazing sci-fi movie last weekend. It really blew me away.","응! 지난 주말에 엄청난 SF 영화를 봤어. 정말 대단했어."],
+["A","Oh, which one? What was it about?","오, 어떤 거? 무슨 내용이야?"],
+["B","It's about astronauts who get stuck on a distant planet. I won't spoil it, but the ending is a real twist.","먼 행성에 갇힌 우주비행사들 이야기야. 스포는 안 할게, 근데 결말이 반전이야."],
+["A","Now I'm curious. Is it worth watching in a theater?","궁금해지네. 극장에서 볼 만한 가치가 있어?"],
+["B","Definitely. The visuals are stunning. You should see it on the big screen.","당연하지. 영상미가 대단해. 큰 화면으로 꼭 봐."],
+["A","I will. Speaking of which, I'm planning a trip this summer, and I'm torn between Japan and Spain.","그럴게. 그러고 보니 이번 여름에 여행을 계획 중인데, 일본과 스페인 사이에서 고민이야."],
+["B","Ooh, tough choice. Have you been to either one?","오, 어려운 선택이네. 둘 중 어디라도 가 본 적 있어?"],
+["A","I've been to Japan twice, but never to Spain.","일본은 두 번 가 봤는데 스페인은 한 번도 못 가 봤어."],
+["B","Then I'd go to Spain for something new. The food, the beaches, the architecture. You can't go wrong.","그럼 새로운 곳으로 스페인에 가겠어. 음식, 해변, 건축물까지, 어떻게 골라도 후회 없을 거야."],
+["A","Good point. But Japan is so much closer and cheaper.","맞는 말이야. 근데 일본이 훨씬 가깝고 싸잖아."],
+["B","True, but you only live once! And you can find cheap flights if you book early.","그렇긴 한데 인생은 한 번뿐이야! 일찍 예약하면 싼 항공권도 찾을 수 있어."],
+["A","You've convinced me. I'll start looking at flights tonight.","설득당했어. 오늘 밤부터 항공권 찾아볼게."],
+["B","Let me know! I'd love to hear all about it when you get back.","알려 줘! 돌아오면 이야기 다 듣고 싶어."]]}
 ];
 const $=s=>document.querySelector(s);
 let SR=null;try{SR=window.SpeechRecognition||window.webkitSpeechRecognition||null}catch(e){SR=null}
@@ -241,6 +829,11 @@ if(!SR&&!IS_INAPP)$("#warn").style.display="block";
 const KEY="speakingProgress_v1";
 let prog={};try{prog=JSON.parse(LS.get(KEY))||{}}catch(e){prog={}}
 const save=()=>LS.set(KEY,JSON.stringify(prog));
+// 기존 8개 상황의 진행 기록을 새 대화(문장 번호가 바뀜)로 한 번만 옮겨 줌. 같은 문장(l[3]=예전 번호)만 점수를 유지.
+(function(){const MK="speakingProgress_migrated_v2";if(LS.get(MK))return;try{const old=prog;const np={};
+SC.forEach(s=>{const o=old[s.id];if(!o)return;const has=s.l.some(l=>l.length>3);if(!has){np[s.id]=o;return}
+const n={};s.l.forEach((l,i)=>{if(l.length>3&&o[l[3]]!=null)n[i]=o[l[3]]});if(Object.keys(n).length)np[s.id]=n});
+Object.keys(old).forEach(id=>{if(!SC.some(s=>s.id===id))np[id]=old[id]});prog=np;save()}catch(e){}LS.set(MK,"1")})();
 let cur=null,mode="practice",roleRun=false,activeRec=null;
 let rate=(parseFloat(LS.get("speakRate"))||0.9);$("#rate").value=rate;$("#rateV").textContent=rate;
 $("#rate2").value=rate;$("#rateV2").textContent=rate;
@@ -300,11 +893,35 @@ const p=prog[cur.id]||(prog[cur.id]={});if(!(p[idx]>=best.pct))p[idx]=best.pct;s
 function showErr(idx,e){const box=document.getElementById("res"+idx);box.style.display="block";
 box.textContent=errMsg(e)}
 function renderHome(){stopAll();roleRun=false;cancelSpeech();cur=null;$("#home").classList.remove("hidden");$("#detail").classList.add("hidden");$("#back").classList.add("hidden");$("#title").textContent="🗣️ 영어 말하기 연습";
-$("#grid").innerHTML=SC.map(s=>{const p=prog[s.id]||{};const myIdx=s.l.map((l,i)=>i);const done=myIdx.filter(i=>p[i]>=70).length;const pc=Math.round(done/s.l.length*100);
-return `<div class="card" data-id="${s.id}"><div class="emo">${s.emo}</div><h3>${s.t}</h3><small>${s.l.length}문장 · 통과 ${done}개</small><div class="bar"><i style="width:${pc}%"></i></div></div>`}).join("");
+renderFilters();renderGrid()}
+// ===== 카테고리·레벨 필터 + 검색 =====
+const CATS=["전체","여행","일상","비즈니스","사교"],LVS=["전체","초급","중급","고급"],CAT_EMO={"전체":"🗂️","여행":"✈️","일상":"🏠","비즈니스":"💼","사교":"💬"};
+const FKEY="scFilter_v1";let fCat="전체",fLv="전체",fQ="";
+try{const f=JSON.parse(LS.get(FKEY));if(f){if(CATS.includes(f.cat))fCat=f.cat;if(LVS.includes(f.lv))fLv=f.lv}}catch(e){}
+const saveF=()=>LS.set(FKEY,JSON.stringify({cat:fCat,lv:fLv}));
+function scText(s){if(!s._t)s._t=(s.t+" "+s.cat+" "+s.lv+" "+s.k.map(k=>k[0]+" "+k[1]).join(" ")+" "+s.l.map(l=>l[1]+" "+l[2]).join(" ")).toLowerCase();return s._t}
+function scMatch(s,cat,lv,q){return(cat==="전체"||s.cat===cat)&&(lv==="전체"||s.lv===lv)&&(!q||q.split(/\s+/).every(w=>scText(s).includes(w)))}
+function renderFilters(){const nq=fQ.trim().toLowerCase();
+$("#catChips").innerHTML=CATS.map(c=>`<button data-c="${c}" class="${c===fCat?"on":""}">${CAT_EMO[c]} ${c} ${SC.filter(s=>scMatch(s,c,fLv,nq)).length}</button>`).join("");
+$("#lvChips").innerHTML=LVS.map(l=>`<button data-l="${l}" class="${l===fLv?"on":""}">${l==="전체"?"모든 레벨":l}</button>`).join("");
+document.querySelectorAll("#catChips button").forEach(b=>b.onclick=()=>{fCat=b.dataset.c;saveF();renderFilters();renderGrid()});
+document.querySelectorAll("#lvChips button").forEach(b=>b.onclick=()=>{fLv=b.dataset.l;saveF();renderFilters();renderGrid()})}
+function renderGrid(){const nq=fQ.trim().toLowerCase();const list=SC.filter(s=>scMatch(s,fCat,fLv,nq));
+$("#count").textContent=list.length===SC.length?`총 ${SC.length}개 상황`:`${list.length}개 상황 (전체 ${SC.length}개 중)`;
+$("#empty").classList.toggle("hidden",list.length>0);$("#qClear").classList.toggle("hidden",!fQ);
+$("#grid").innerHTML=list.map(s=>{const p=prog[s.id]||{};const done=s.l.filter((l,i)=>p[i]>=70).length;const pc=Math.round(done/s.l.length*100);
+return `<div class="card" data-id="${s.id}"><div class="emo">${s.emo}</div><h3>${s.t}</h3><div class="tags"><span class="tag lv-${s.lv}">${s.lv}</span><span class="tag">${s.cat}</span></div><small>${s.l.length}문장 · 통과 ${done}개</small><div class="bar"><i style="width:${pc}%"></i></div></div>`}).join("");
 document.querySelectorAll(".card").forEach(c=>c.onclick=()=>openSc(c.dataset.id))}
+$("#q").oninput=e=>{fQ=e.target.value;renderFilters();renderGrid()};
+$("#qClear").onclick=()=>{fQ="";$("#q").value="";renderFilters();renderGrid();$("#q").focus()};
+
 function openSc(id){cur=SC.find(s=>s.id===id);$("#home").classList.add("hidden");$("#detail").classList.remove("hidden");$("#back").classList.remove("hidden");$("#title").textContent=cur.emo+" "+cur.t;
-$("#myRole").innerHTML=`<option value="B">${cur.roles[1]} (B)</option><option value="A">${cur.roles[0]} (A)</option>`;renderLines();window.scrollTo(0,0)}
+$("#myRole").innerHTML=`<option value="B">${cur.roles[1]} (B)</option><option value="A">${cur.roles[0]} (A)</option>`;
+$("#scMeta").innerHTML=`<span class="tag lv-${cur.lv}">${cur.lv}</span><span class="tag">${cur.cat}</span><span class="tag">${cur.l.length}문장</span>`;
+const koShow=$("#showKo").checked?"":"style='display:none'";
+$("#kChips").innerHTML=cur.k.map((k,i)=>`<button data-k="${i}"><b>🔊 ${esc(k[0])}</b><span class="ko" ${koShow}>${esc(k[1])}</span></button>`).join("");
+document.querySelectorAll("#kChips button").forEach(b=>b.onclick=async()=>{stopAll();document.querySelectorAll("#kChips button.pl").forEach(x=>x.classList.remove("pl"));b.classList.add("pl");await say(cur.k[+b.dataset.k][0]);b.classList.remove("pl")});
+renderLines();window.scrollTo(0,0)}
 function renderLines(){const p=prog[cur.id]||{};
 $("#lines").innerHTML=cur.l.map((l,i)=>`<div class="line ${l[0]}" id="line${i}"><div class="who">${l[0]==="A"?cur.roles[0]:cur.roles[1]}${p[i]!=null?` · 최고 ${p[i]}%`:""}</div>
 <div class="en">${l[1]}</div><div class="ko" ${$("#showKo").checked?"":"style='display:none'"}>${l[2]}</div>
